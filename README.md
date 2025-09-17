@@ -13,14 +13,15 @@ app sakusei
 - HTML/CSS/JavaScript
 
 ## セットアップ方法
-資格情報マネージャーを検索してgithubの情報を消しておく
+資格情報マネージャーを検索してgithubの情報を消しておく<br>
 
-1．VSCodeに自分の情報を登録する
-  ・vscode内のターミナル
-  git config –global user.name githubのID
-  git config –global user.email メアド
+1. VSCodeに自分の情報を登録する<br>
+  ・vscode内のターミナル<br>
+  git config –global user.name githubのID<br>
+  git config –global user.email メアド<br>
   （登録情報を確認するときは git config –global user.name(またはuser.email）
-2. リポジトリをクローンする
+
+3. リポジトリをクローンする
   git clone https://github.com/kvv7ma/kataduke.git
   cd kataduke
 
