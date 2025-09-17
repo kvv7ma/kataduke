@@ -21,12 +21,12 @@ app sakusei
   git config –global user.email メアド<br>
   （登録情報を確認するときは git config –global user.name(またはuser.email）
 
-3. リポジトリをクローンする
-  git clone https://github.com/kvv7ma/kataduke.git
+3. リポジトリをクローンする<br>
+  git clone https://github.com/kvv7ma/kataduke.git<br>
   cd kataduke
 
 ## 作業内容を保存するとき
-VSCode内ターミナル
-  git add .
-  git commit -m "(作業内容にタイトルをつける)"（例："first commit"、"album sakusei"など）
-  git push origin main 
+  VSCode内ターミナル<br>
+    git add .<br>
+    git commit -m "(作業内容にタイトルをつける)"（例："first commit"、"album sakusei"など）<br>
+    git push origin main <br>
