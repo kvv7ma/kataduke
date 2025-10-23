@@ -1,5 +1,5 @@
 # kataduke
-app sakusei
+app contest
 
 ## 機能
 - アプリ説明ページ → ログイン画面 → メイン画面 
