@@ -25,8 +25,9 @@ app sakusei
   git clone https://github.com/kvv7ma/kataduke.git<br>
   cd kataduke
 
-## 作業内容を保存するとき
-  VSCode内ターミナル<br>
-    git add .<br>
-    git commit -m "(作業内容にタイトルをつける)"（例："first commit"、"album sakusei"など）<br>
-    git push origin main <br>
+普通に噓の可能性がある↓
+~~### 作業内容を保存するとき~~
+  ~~VSCode内ターミナル<br>~~
+    ~~git add .<br>~~
+    ~~git commit -m "(作業内容にタイトルをつける)"（例："first commit"、"album sakusei"など）<br>~~
+    ~~git push origin main <br>~~
