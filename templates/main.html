@@ -106,15 +106,19 @@
             <!-- メニューアイテム -->
             <div id="menu-items" class="menu-items">
                 <a href="{{ url_for('camera') }}" class="menu-item">
+                    <span class="menu-label">カメラ</span>
                     <img src="{{ url_for('static', filename='images/camera_icon.png') }}" alt="カメラ">
                 </a>
                 <a href="{{ url_for('todo') }}" class="menu-item">
+                    <span class="menu-label">TODO</span>
                     <img src="{{ url_for('static', filename='images/todo_icon.png') }}" alt="TODO">
                 </a>
                 <a href="{{ url_for('album') }}" class="menu-item">
+                    <span class="menu-label">アルバム</span>
                     <img src="{{ url_for('static', filename='images/album_icon.png') }}" alt="アルバム">
                 </a>
                 <a href="{{ url_for('tips') }}" class="menu-item">
+                    <span class="menu-label">TIPS</span>
                     <img src="{{ url_for('static', filename='images/tips_icon.png') }}" alt="TIPS">
                 </a>
             </div>
