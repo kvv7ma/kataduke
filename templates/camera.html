@@ -18,6 +18,7 @@
             max-width: 640px;
             margin-bottom: 1rem;
             border-radius: 10px;
+            display: block;
         }
 
         #canvas {
@@ -168,12 +169,12 @@
     <div class="camera-container">
         <h1>写真を撮る</h1>
         <div class="camera-status" id="cameraStatus">カメラを起動してください</div>
-        <video id="video" autoplay style="display: none;"></video>
+        <video id="video" autoplay></video>
         <canvas id="canvas"></canvas>
         
         <div class="camera-buttons">
             <button id="startButton" class="camera-button">カメラを開始</button>
-            <button id="snapButton" class="capture-button" style="display: none;">📸</button>
+            <button id="snapButton" class="capture-button" disabled>📸</button>
         </div>
 
         <!-- 写真確認ポップアップ -->
@@ -218,9 +219,8 @@
                     video: { facingMode: 'environment' }
                 });
                 video.srcObject = stream;
-                video.style.display = 'block';
-                startButton.style.display = 'none';
-                snapButton.style.display = 'inline-block';
+                startButton.disabled = true;
+                snapButton.disabled = false;
                 cameraStatus.textContent = '撮影ボタンを押して写真を撮ってください';
             } catch (err) {
                 console.error('カメラの起動に失敗しました:', err);
@@ -245,7 +245,6 @@
                 stream.getTracks().forEach(track => track.stop());
             }
             video.style.display = 'none';
-            snapButton.style.display = 'none';
             
             // 確認ポップアップを表示
             photoConfirm.style.display = 'flex';
@@ -260,8 +259,10 @@
             confirmPhoto.src = '';
             
             // カメラを再起動
-            startButton.style.display = 'inline-block';
-            startButton.click(); // 自動的にカメラを再起動
+            video.style.display = 'block';
+            startButton.disabled = false;
+            snapButton.disabled = true;
+            cameraStatus.textContent = 'カメラを開始してください';
         });
 
         // このまま進むボタン
