@@ -92,6 +92,19 @@
             border-radius: 5px;
             margin-top: 1rem;
         }
+
+        /* 完了時ハイライト */
+        .todo-item.highlight {
+            background: #e8f9e8;
+            transition: background 0.3s ease, transform 0.2s ease;
+            transform: scale(1.01);
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: #6b6b6b;
+            transition: color 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -169,8 +182,27 @@
                 const totalCount = document.querySelectorAll('.todo-checkbox').length;
                 
                 if (completedCount === totalCount) {
-                    // すべてのタスクが完了した場合
-                    window.location.href = "{{ url_for('camera') }}?type=after";
+                    // すべてのタスクが完了した場合 — 確認ダイアログを表示
+                    const goCamera = confirm('すべて完了しました。カメラで片付け後の写真を撮りますか？');
+                        if (goCamera) {
+                            // OK の場合のみカメラ（after）へ移動する前に完了済みTODOをハイライト
+                            const checkedItems = document.querySelectorAll('.todo-checkbox:checked');
+                            checkedItems.forEach(cb => {
+                                const item = cb.closest('.todo-item');
+                                if (item) {
+                                    item.classList.add('highlight');
+                                    const text = item.querySelector('.todo-text');
+                                    if (text) text.classList.add('completed');
+                                }
+                            });
+
+                            // ハイライトを見せてからリダイレクト（1.2秒）
+                            setTimeout(() => {
+                                window.location.href = "{{ url_for('camera') }}?type=after";
+                            }, 1200);
+                        } else {
+                            // キャンセルした場合は何もしない
+                        }
                 }
             }
         }
