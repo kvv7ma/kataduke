@@ -43,6 +43,14 @@
             background-color: #45a049;
         }
 
+        .retake-button {
+            background-color: #ff6b6b;
+        }
+
+        .retake-button:hover {
+            background-color: #ff5252;
+        }
+
         #photo {
             max-width: 100%;
             border-radius: 10px;
@@ -79,6 +87,7 @@
         <div class="camera-buttons">
             <button id="startButton" class="camera-button">カメラを開始</button>
             <button id="snapButton" class="camera-button" disabled>撮影</button>
+            <button id="retakeButton" class="camera-button retake-button" disabled style="display: none;">撮り直し</button>
             <button id="saveButton" class="camera-button" disabled>保存</button>
         </div>
 
@@ -92,6 +101,7 @@
         const photo = document.getElementById('photo');
         const startButton = document.getElementById('startButton');
         const snapButton = document.getElementById('snapButton');
+        const retakeButton = document.getElementById('retakeButton');
         const saveButton = document.getElementById('saveButton');
         const context = canvas.getContext('2d');
         let stream = null;
@@ -127,7 +137,36 @@
             }
             
             snapButton.disabled = true;
+            retakeButton.disabled = false;
+            retakeButton.style.display = 'inline-block';
             saveButton.disabled = false;
+        });
+
+        // 撮り直し
+        retakeButton.addEventListener('click', async () => {
+            // 撮影した写真を非表示
+            photo.style.display = 'none';
+            video.style.display = 'block';
+            
+            // ボタンの状態をリセット
+            startButton.disabled = false;
+            snapButton.disabled = true;
+            retakeButton.disabled = true;
+            retakeButton.style.display = 'none';
+            saveButton.disabled = true;
+            
+            // カメラを再起動
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                startButton.disabled = true;
+                snapButton.disabled = false;
+            } catch (err) {
+                console.error('カメラの再起動に失敗しました:', err);
+                alert('カメラの再起動に失敗しました。');
+            }
         });
 
         // 写真保存
@@ -143,77 +182,6 @@
                 })
             });
 
-<<<<<<< HEAD
-        // このまま進むボタン
-        proceedButton.addEventListener('click', async () => {
-            if (!capturedImageData) {
-                alert('写真データがありません');
-                return;
-            }
-
-            try {
-                const response = await fetch('/save_photo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        image: capturedImageData,
-                        date: new Date().toISOString()
-                    })
-                });
-
-                if (response.ok) {
-                    // 写真保存成功時にフラグを立てる
-                    photoSaved = true;
-                    // アルバムページに移動
-                    window.location.href = "{{ url_for('album') }}";
-                } else {
-                    alert('写真の保存に失敗しました。');
-                }
-            } catch (error) {
-                console.error('保存エラー:', error);
-                alert('写真の保存に失敗しました。');
-            }
-        });
-
-        // ポップアップの外側をクリックしても閉じないように
-        photoConfirm.addEventListener('click', (e) => {
-            if (e.target === photoConfirm) {
-                // 外側をクリックしても何もしない（撮り直しか進むかを明確に選択してもらう）
-            }
-        });
-
-        // カメラページから離脱するときに復元処理（写真保存成功時以外）
-        let photoSaved = false;
-
-        // ページ離脱時に復元
-        window.addEventListener('beforeunload', async (e) => {
-            if (!photoSaved) {
-                // 写真を保存せずに離脱する場合は復元API呼び出し（同期的に）
-                navigator.sendBeacon('/restore_marked_todos', JSON.stringify({}));
-            }
-        });
-
-        // 戻るボタンをクリックしたときも復元
-        document.querySelectorAll('.back-button, nav a').forEach(link => {
-            link.addEventListener('click', async (e) => {
-                if (!photoSaved) {
-                    e.preventDefault();
-                    const href = e.target.href;
-                    try {
-                        await fetch('/restore_marked_todos', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({})
-                        });
-                    } finally {
-                        window.location.href = href;
-                    }
-                }
-            });
-        });
-=======
             if (response.ok) {
                 alert('写真を保存しました！');
                 window.location.href = "{{ url_for('todo') }}";
@@ -221,7 +189,6 @@
                 alert('写真の保存に失敗しました。');
             }
         });
->>>>>>> d915db5a98703b0d2eec1fd6a068582e528fe78a
     </script>
 </body>
 </html>
