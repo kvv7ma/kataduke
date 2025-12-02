@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TODO - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tips.css') }}">
+    <style>
+        .todo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .todo-list {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-checkbox {
+            margin-right: 1rem;
+            width: 20px;
+            height: 20px;
+        }
+
+        .todo-text {
+            flex-grow: 1;
+        }
+
+        .todo-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .todo-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .todo-input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .todo-add {
+            padding: 0.5rem 1rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .todo-add:hover {
+            background: #45a049;
+        }
+
+        .todo-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .todo-delete:hover {
+            background: #d94336;
+        }
+
+        .photo-preview {
+            max-width: 200px;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <h1>KATADUKE TODO</h1>
+        <nav>
+            <a href="/main">ホーム</a> |
+            <a href="/tips">TIPS</a> |
+            <a href="/album">アルバム</a> |
+            <a href="/camera">カメラ</a>
+    </header>
+    <div class="todo-container">
+        <h1>TODOリスト</h1>
+        
+        {% if photo %}
+        <div class="photo-section">
+            <h3>片付け前の写真:</h3>
+            <img src="{{ photo }}" alt="片付け前" class="photo-preview">
+        </div>
+        {% endif %}
+
+        <div class="todo-form">
+            <input type="text" class="todo-input" id="newTodo" placeholder="新しいタスクを入力...">
+            <button class="todo-add" onclick="addTodo()">追加</button>
+        </div>
+
+        <div class="todo-list" id="todoList">
+            {% for todo in todos %}
+            <div class="todo-item">
+                <input type="checkbox" class="todo-checkbox" 
+                       {% if todo.completed %}checked{% endif %}
+                       onchange="toggleTodo({{ todo.id }})">
+                <span class="todo-text">{{ todo.text }}</span>
+                <span class="todo-date">{{ todo.date }}</span>
+                <button class="todo-delete" onclick="deleteTodo({{ todo.id }})">削除</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('main') }}" class="back-button">戻る</a>
+    </div>
+
+    <script>
+        async function addTodo() {
+            const input = document.getElementById('newTodo');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const response = await fetch('/add_todo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            }
+        }
+
+        async function toggleTodo(id) {
+            const response = await fetch('/toggle_todo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id })
+            });
+
+            if (response.ok) {
+                // 背景の変更をトリガー
+                const completedCount = document.querySelectorAll('.todo-checkbox:checked').length;
+                const totalCount = document.querySelectorAll('.todo-checkbox').length;
+                
+                if (completedCount === totalCount) {
+                    // すべてのタスクが完了した場合
+                    window.location.href = "{{ url_for('camera') }}?type=after";
+                }
+            }
+        }
+
+        async function deleteTodo(id) {
+            if (!confirm('このTODOを削除しますか？')) return;
+
+            const response = await fetch('/delete_todo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('削除に失敗しました');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>片付けアプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div id="splash">
+    <button onclick="startApp()">START</button>
+  </div>
+
+  <div class="container" id="mainContent">
+    <div class="header-buttons">
+      <a href="{{ url_for('login') }}" class="header-button">ログイン</a>
+      <a href="{{ url_for('register') }}" class="header-button" style="background-color: #666;">新規登録</a>
+    </div>
+
+    <div class="description">
+      <h1>片付けアプリへようこそ！</h1>
+      <h2>このアプリでできること：</h2>
+      <ul>
+        <li>🎯 ToDoリストで片付けを管理</li>
+        <li>📸 片付け前後の写真を撮影</li>
+        <li>📚 アルバムで成果を記録</li>
+        <li>🎮 楽しくゲーム感覚で片付け</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function startApp() {
+      document.getElementById('splash').classList.add('fade-out');
+      setTimeout(() => {
+        document.getElementById('mainContent').classList.add('visible');
+      }, 500);
+    }
+  </script>
+</body>
+</html>

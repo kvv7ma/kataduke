@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>メイン - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/character.js') }}"></script>
+    <script>
+        // メニューの表示・非表示を切り替える関数
+        function toggleMenu() {
+            console.log('toggleMenu called'); // デバッグ用
+            const menuItems = document.getElementById('menu-items');
+            const menuButton = document.querySelector('.menu-button');
+            
+            console.log('menuItems:', menuItems); // デバッグ用
+            console.log('menuButton:', menuButton); // デバッグ用
+            
+            if (menuItems && menuButton) {
+                const isVisible = menuItems.classList.contains('visible');
+                console.log('Current visibility:', isVisible); // デバッグ用
+                
+                if (isVisible) {
+                    menuItems.classList.remove('visible');
+                    menuButton.classList.remove('active');
+                } else {
+                    menuItems.classList.add('visible');
+                    menuButton.classList.add('active');
+                }
+                
+                console.log('New visibility:', menuItems.classList.contains('visible')); // デバッグ用
+            } else {
+                console.error('Menu elements not found!');
+            }
+        }
+
+        // ページ読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded event fired'); // デバッグ用
+            
+            const menuButton = document.getElementById('menu-toggle');
+            const menuItems = document.getElementById('menu-items');
+            
+            console.log('Found menuButton:', menuButton); // デバッグ用
+            console.log('Found menuItems:', menuItems); // デバッグ用
+            
+            // 初期状態でメニューを非表示にする
+            if (menuItems) {
+                menuItems.classList.remove('visible');
+                console.log('Menu items initialized as hidden');
+            }
+            
+            // メニューボタンにイベントリスナーを追加
+            if (menuButton) {
+                menuButton.addEventListener('click', function(e) {
+                    console.log('Menu button clicked'); // デバッグ用
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMenu();
+                });
+                console.log('Event listener added to menu button');
+            } else {
+                console.error('Menu button not found!');
+            }
+            
+            // メニュー外をクリックしたときにメニューを閉じる
+            document.addEventListener('click', function(e) {
+                if (menuItems && menuButton && 
+                    !menuButton.contains(e.target) && 
+                    !menuItems.contains(e.target)) {
+                    menuItems.classList.remove('visible');
+                    menuButton.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 背景レイヤー -->
+        <div class="background-layer">
+            <img src="{{ url_for('static', filename='images/mainback_dirty.png') }}" alt="背景" class="background-image">
+        </div>
+        
+        <!-- フレームレイヤー -->
+        <div class="frame-layer">
+            <img src="{{ url_for('static', filename='images/frame.png') }}" alt="フレーム" class="frame-image">
+        </div>
+
+        <!-- キャラクターエリア -->
+        <div class="character-area">
+            <div id="character">
+                <img src="{{ url_for('static', filename='images/char_front.png') }}" alt="キャラクター" style="max-width: 300px;">
+            </div>
+            <div id="speech-bubble">
+                <p>片付けを始めましょう！</p>
+            </div>
+        </div>
+
+        <!-- メニューボタン -->
+        <div class="menu-container">
+            <button class="menu-button" id="menu-toggle">
+                <img src="{{ url_for('static', filename='images/menu_hako.png') }}" alt="メニュー" class="menu-icon">
+            </button>
+
+            <!-- メニューアイテム -->
+            <div id="menu-items" class="menu-items">
+                <a href="{{ url_for('camera') }}" class="menu-item">
+                    <img src="{{ url_for('static', filename='images/camera_icon.png') }}" alt="カメラ">
+                </a>
+                <a href="{{ url_for('todo') }}" class="menu-item">
+                    <img src="{{ url_for('static', filename='images/todo_icon.png') }}" alt="TODO">
+                </a>
+                <a href="{{ url_for('album') }}" class="menu-item">
+                    <img src="{{ url_for('static', filename='images/album_icon.png') }}" alt="アルバム">
+                </a>
+                <a href="{{ url_for('tips') }}" class="menu-item">
+                    <img src="{{ url_for('static', filename='images/tips_icon.png') }}" alt="TIPS">
+                </a>
+            </div>
+        </div>
+
+        <!-- ログアウトボタン -->
+        <a href="{{ url_for('logout') }}" class="logout-button">ログアウト</a>
+    </div>
+</body>
+</html>

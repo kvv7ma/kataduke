@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+  <title>TIPS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/tips.css">
+  </head>
+  <body>
+    <header>
+      <h1>KATADUKE TIPS</h1>
+        <nav>
+            <a href="/main">ホーム</a> |
+            <a href="/todo">TODO</a> |
+            <a href="/album">アルバム</a> |
+            <a href="/camera">カメラ</a>
+    </header>
+
+    <main>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="flash-message">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <section>
+        <h2>投稿する</h2>
+        <form action="/tips" method="post">
+          <div>
+            <label for="title">タイトル</label><br>
+            <input id="title" name="title" type="text" maxlength="100" style="width:100%;" required>
+          </div>
+          <div>
+            <label for="content">本文</label><br>
+            <textarea id="content" name="content" rows="6" style="width:100%;" required></textarea>
+          </div>
+          <div>
+            <button type="submit">投稿</button>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2>TIPS一覧</h2>
+        {% if posts %}
+          <ul>
+            {% for post in posts %}
+              <li>
+                <div class="post-header">
+                  <h3>{{ post.title }}</h3>
+                  <button class="delete-btn" onclick="deleteTip('{{ post.id }}')">削除</button>
+                </div>
+                <p>{{ post.content }}</p>
+                <small>投稿日: {{ post.created_at }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="no-posts">まだ投稿はありません。</p>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; {{ year if year is defined else "" }}</p>
+    </footer>
+
+  <script>
+    function deleteTip(tipId) {
+      console.log('削除対象ID:', tipId); // デバッグ用
+      if (confirm('この投稿を削除しますか？')) {
+        fetch('/delete_tip', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: parseInt(tipId) })
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              location.reload(); // ページをリロードして削除を反映
+            } else {
+              alert('削除に失敗しました: ' + (data.error || '不明なエラー'));
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('エラーが発生しました: ' + error.message);
+          });
+      }
+    }
+  </script>
+  </body>
+</html>

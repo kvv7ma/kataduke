@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>カメラ - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tips.css') }}">
+    <style>
+        .camera-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .camera-buttons {
+            margin: 1rem 0;
+        }
+
+        .camera-button {
+            padding: 0.8rem 2rem;
+            margin: 0 0.5rem;
+            border: none;
+            border-radius: 25px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-button:hover {
+            background-color: #45a049;
+        }
+
+        #photo {
+            max-width: 100%;
+            border-radius: 10px;
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #666;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <h1>KATATUKE CAMERA</h1>
+        <nav>
+            <a href="/main">ホーム</a> |
+            <a href="/todo">TODO</a> |
+            <a href="/album">アルバム</a> |
+            <a href="/tips">TIPS</a>
+    </header>
+    <div class="camera-container">
+        <h1>写真を撮る</h1>
+        <video id="video" autoplay></video>
+        <canvas id="canvas"></canvas>
+        <img id="photo" alt="撮影した写真">
+        
+        <div class="camera-buttons">
+            <button id="startButton" class="camera-button">カメラを開始</button>
+            <button id="snapButton" class="camera-button" disabled>撮影</button>
+            <button id="saveButton" class="camera-button" disabled>保存</button>
+        </div>
+
+        <a href="{{ url_for('main') }}" class="back-button">戻る</a>
+    </div>
+
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const photo = document.getElementById('photo');
+        const startButton = document.getElementById('startButton');
+        const snapButton = document.getElementById('snapButton');
+        const saveButton = document.getElementById('saveButton');
+        const context = canvas.getContext('2d');
+        let stream = null;
+
+        // カメラ開始
+        startButton.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                startButton.disabled = true;
+                snapButton.disabled = false;
+            } catch (err) {
+                console.error('カメラの起動に失敗しました:', err);
+                alert('カメラの起動に失敗しました。カメラへのアクセスを許可してください。');
+            }
+        });
+
+        // 写真撮影
+        snapButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const data = canvas.toDataURL('image/png');
+            photo.setAttribute('src', data);
+            photo.style.display = 'block';
+            video.style.display = 'none';
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            snapButton.disabled = true;
+            saveButton.disabled = false;
+        });
+
+        // 写真保存
+        saveButton.addEventListener('click', async () => {
+            const response = await fetch('/save_photo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: photo.src,
+                    date: new Date().toISOString()
+                })
+            });
+
+            if (response.ok) {
+                alert('写真を保存しました！');
+                window.location.href = "{{ url_for('todo') }}";
+            } else {
+                alert('写真の保存に失敗しました。');
+            }
+        });
+    </script>
+</body>
+</html>

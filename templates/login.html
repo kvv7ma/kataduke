@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ログイン - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h1>ログイン</h1>
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-group">
+                <label for="username">ユーザー名：</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">パスワード：</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">ログイン</button>
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">トップページに戻る</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>アルバム - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tips.css') }}">
+    <style>
+        .album-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header h1 {
+            margin-bottom: 1rem;
+        }
+
+        nav a {
+            margin: 0 0.3rem;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .date-section {
+            margin-bottom: 2rem;
+        }
+
+        .date-header {
+            background: #4CAF50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .photo-info {
+            padding: 0.5rem;
+        }
+
+        .photo-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .photo-todos {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .photo-type {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .photo-type.before {
+            background: #f44336;
+        }
+
+        .photo-type.after {
+            background: #4CAF50;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background: #2196F3;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <h1>KATADUKE ALBUM</h1>
+        <nav>
+            <a href="{{ url_for('main') }}">ホーム</a> |
+            <a href="{{ url_for('todo') }}">TODO</a> |
+            <a href="{{ url_for('tips') }}">TIPS</a> |
+            <a href="{{ url_for('camera') }}">カメラ</a>
+        </nav>
+    </header>
+
+    <div class="album-container">
+        <h1>アルバム</h1>
+
+        {# ========= 日付ごとのグループ化 ========= #}
+        {% for date, entries in photos|groupby('date') %}
+        <div class="date-section">
+            <h2 class="date-header">{{ date }}</h2>
+
+            <div class="photo-grid">
+                {% for photo in entries %}
+                <div class="photo-item">
+                    <img src="{{ photo.url }}" alt="片付けの写真">
+
+                    <span class="photo-type {{ photo.type }}">
+                        {{ '片付け前' if photo.type == 'before' else '片付け後' }}
+                    </span>
+
+                    <div class="photo-info">
+                        <div class="photo-time">{{ photo.time }}</div>
+
+                        {% if photo.todos %}
+                        <div class="photo-todos">
+                            <strong>完了したTODO:</strong>
+                            <ul>
+                                {% for todo in photo.todos %}
+                                <li>{{ todo }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <a href="{{ url_for('main') }}" class="back-button">戻る</a>
+    </div>
+</body>
+</html>
