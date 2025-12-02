@@ -182,77 +182,6 @@
                 })
             });
 
-<<<<<<< HEAD
-        // このまま進むボタン
-        proceedButton.addEventListener('click', async () => {
-            if (!capturedImageData) {
-                alert('写真データがありません');
-                return;
-            }
-
-            try {
-                const response = await fetch('/save_photo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        image: capturedImageData,
-                        date: new Date().toISOString()
-                    })
-                });
-
-                if (response.ok) {
-                    // 写真保存成功時にフラグを立てる
-                    photoSaved = true;
-                    // アルバムページに移動
-                    window.location.href = "{{ url_for('album') }}";
-                } else {
-                    alert('写真の保存に失敗しました。');
-                }
-            } catch (error) {
-                console.error('保存エラー:', error);
-                alert('写真の保存に失敗しました。');
-            }
-        });
-
-        // ポップアップの外側をクリックしても閉じないように
-        photoConfirm.addEventListener('click', (e) => {
-            if (e.target === photoConfirm) {
-                // 外側をクリックしても何もしない（撮り直しか進むかを明確に選択してもらう）
-            }
-        });
-
-        // カメラページから離脱するときに復元処理（写真保存成功時以外）
-        let photoSaved = false;
-
-        // ページ離脱時に復元
-        window.addEventListener('beforeunload', async (e) => {
-            if (!photoSaved) {
-                // 写真を保存せずに離脱する場合は復元API呼び出し（同期的に）
-                navigator.sendBeacon('/restore_marked_todos', JSON.stringify({}));
-            }
-        });
-
-        // 戻るボタンをクリックしたときも復元
-        document.querySelectorAll('.back-button, nav a').forEach(link => {
-            link.addEventListener('click', async (e) => {
-                if (!photoSaved) {
-                    e.preventDefault();
-                    const href = e.target.href;
-                    try {
-                        await fetch('/restore_marked_todos', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({})
-                        });
-                    } finally {
-                        window.location.href = href;
-                    }
-                }
-            });
-        });
-=======
             if (response.ok) {
                 alert('写真を保存しました！');
                 window.location.href = "{{ url_for('todo') }}";
@@ -260,7 +189,6 @@
                 alert('写真の保存に失敗しました。');
             }
         });
->>>>>>> d915db5a98703b0d2eec1fd6a068582e528fe78a
     </script>
 </body>
 </html>
