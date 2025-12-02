@@ -43,6 +43,14 @@
             background-color: #45a049;
         }
 
+        .retake-button {
+            background-color: #ff6b6b;
+        }
+
+        .retake-button:hover {
+            background-color: #ff5252;
+        }
+
         #photo {
             max-width: 100%;
             border-radius: 10px;
@@ -79,6 +87,7 @@
         <div class="camera-buttons">
             <button id="startButton" class="camera-button">カメラを開始</button>
             <button id="snapButton" class="camera-button" disabled>撮影</button>
+            <button id="retakeButton" class="camera-button retake-button" disabled style="display: none;">撮り直し</button>
             <button id="saveButton" class="camera-button" disabled>保存</button>
         </div>
 
@@ -92,6 +101,7 @@
         const photo = document.getElementById('photo');
         const startButton = document.getElementById('startButton');
         const snapButton = document.getElementById('snapButton');
+        const retakeButton = document.getElementById('retakeButton');
         const saveButton = document.getElementById('saveButton');
         const context = canvas.getContext('2d');
         let stream = null;
@@ -127,7 +137,36 @@
             }
             
             snapButton.disabled = true;
+            retakeButton.disabled = false;
+            retakeButton.style.display = 'inline-block';
             saveButton.disabled = false;
+        });
+
+        // 撮り直し
+        retakeButton.addEventListener('click', async () => {
+            // 撮影した写真を非表示
+            photo.style.display = 'none';
+            video.style.display = 'block';
+            
+            // ボタンの状態をリセット
+            startButton.disabled = false;
+            snapButton.disabled = true;
+            retakeButton.disabled = true;
+            retakeButton.style.display = 'none';
+            saveButton.disabled = true;
+            
+            // カメラを再起動
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                startButton.disabled = true;
+                snapButton.disabled = false;
+            } catch (err) {
+                console.error('カメラの再起動に失敗しました:', err);
+                alert('カメラの再起動に失敗しました。');
+            }
         });
 
         // 写真保存
