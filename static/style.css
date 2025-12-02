@@ -319,10 +319,48 @@ body, html {
     text-decoration: none;
     padding: 0.3rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     transform: translateX(60px);
     opacity: 0;
+    position: relative;
+}
+
+/* メニューラベル（ホバー時に表示） */
+.menu-label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.menu-label::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+.menu-item:hover .menu-label {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
 }
 
 /* ▼ visible 時に順番にスライドイン */
@@ -600,5 +638,29 @@ img, video, canvas {
         width: 36px;
         height: 36px;
         font-size: 14px;
+    }
+
+    /* 縦表示時はラベルを横（左側）に表示 */
+    .menu-label {
+        bottom: auto;
+        left: auto;
+        right: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-bottom: 0;
+        margin-right: 8px;
+    }
+
+    .menu-label::after {
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border: 6px solid transparent;
+        border-left-color: rgba(0, 0, 0, 0.8);
+        border-top-color: transparent;
+    }
+
+    .menu-item:hover .menu-label {
+        transform: translateY(-50%) translateX(-5px);
     }
 }
