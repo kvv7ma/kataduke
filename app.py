@@ -274,6 +274,7 @@ def album():
         todos = [todo.strip() for todo in todos if todo.strip()]
 
         photos.append({
+            'id': photo_id,
             'url': url_for('static', filename=image_path),
             'type': photo_type,
             'date': photo_date,
@@ -332,6 +333,48 @@ def delete_tip():
         conn.close()
         
         return jsonify({'success': True, 'message': 'ヒントが削除されました'})
+        
+    except Exception as e:
+        print(f"削除エラー: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/delete_photo', methods=['POST'])
+def delete_photo():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    try:
+        data = request.get_json()
+        photo_id = data.get('id')
+        
+        if photo_id is None:
+            return jsonify({'success': False, 'error': 'IDが指定されていません'}), 400
+        
+        conn = sqlite3.connect('ui.db')
+        c = conn.cursor()
+        
+        # 削除前に画像パスを取得してファイルも削除
+        c.execute('SELECT image_path FROM photos WHERE id = ? AND user_id = ?', (photo_id, session['user_id']))
+        result = c.fetchone()
+        
+        if result:
+            image_path = result[0]
+            # ファイルシステムから画像ファイルを削除
+            if image_path.startswith('static/'):
+                file_path = os.path.join(BASE_DIR, image_path)
+            else:
+                file_path = os.path.join(PHOTOS_DIR, os.path.basename(image_path))
+            
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            # データベースからレコードを削除
+            c.execute('DELETE FROM photos WHERE id = ? AND user_id = ?', (photo_id, session['user_id']))
+            conn.commit()
+        
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '写真が削除されました'})
         
     except Exception as e:
         print(f"削除エラー: {e}")
