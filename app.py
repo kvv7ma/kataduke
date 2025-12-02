@@ -44,6 +44,12 @@ def init_db():
         c.execute('ALTER TABLE todos ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT 0')
     except sqlite3.OperationalError:
         pass  # カラムが既に存在する場合は無視
+
+    # 既存のテーブルにmarked_for_photoカラムを追加（エラーが出ても無視）
+    try:
+        c.execute('ALTER TABLE todos ADD COLUMN marked_for_photo BOOLEAN NOT NULL DEFAULT 0')
+    except sqlite3.OperationalError:
+        pass  # カラムが既に存在する場合は無視
     
     # 写真テーブル
     c.execute('''CREATE TABLE IF NOT EXISTS photos
@@ -138,9 +144,15 @@ def todo():
         
     conn = sqlite3.connect('ui.db')
     c = conn.cursor()
-    # 削除されていないTODOのみ表示
+    
+    # 古いマークをクリーンアップ（写真保存されずに残ったmarked_for_photoを復元）
+    c.execute('UPDATE todos SET marked_for_photo = 0 WHERE user_id = ? AND marked_for_photo = 1 AND deleted = 0',
+              (session['user_id'],))
+    conn.commit()
+    
+    # 削除されていない、かつマークされていないTODOのみ表示
     c.execute('''SELECT t.* FROM todos t
-                WHERE t.user_id = ? AND t.deleted = 0
+                WHERE t.user_id = ? AND t.deleted = 0 AND t.marked_for_photo = 0
                 ORDER BY t.date DESC''', (session['user_id'],))
     todos = [{'id': row[0], 'text': row[2], 'completed': row[3], 'date': row[4]} for row in c.fetchall()]
     conn.close()
@@ -200,6 +212,44 @@ def delete_todo():
 
     return jsonify({'success': True})
 
+
+@app.route('/mark_todos_for_photo', methods=['POST'])
+def mark_todos_for_photo():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+
+    try:
+        conn = sqlite3.connect('ui.db')
+        c = conn.cursor()
+        # 完了済みかつ未削除のTODOを次の写真に紐づけるためにマーク（削除はしない）
+        c.execute('UPDATE todos SET marked_for_photo = 1 WHERE user_id = ? AND completed = 1 AND deleted = 0',
+                  (session['user_id'],))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"mark_todos_for_photo error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/restore_marked_todos', methods=['POST'])
+def restore_marked_todos():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+
+    try:
+        conn = sqlite3.connect('ui.db')
+        c = conn.cursor()
+        # マーク済みTODOのマークを解除（復元）
+        c.execute('UPDATE todos SET marked_for_photo = 0 WHERE user_id = ? AND marked_for_photo = 1',
+                  (session['user_id'],))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"restore_marked_todos error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route("/camera")
 def camera():
     if 'user_id' not in session:
@@ -236,12 +286,14 @@ def save_photo():
 
     completed_todos = ""
     if photo_type == 'after':
-        c.execute('SELECT text FROM todos WHERE user_id = ? AND completed = 1 AND deleted = 0',
+        # 先にユーザがOKを押した際にマークされた TODO を写真に紐づける
+        c.execute('SELECT text FROM todos WHERE user_id = ? AND marked_for_photo = 1',
                   (session['user_id'],))
         completed_todo_list = [row[0] for row in c.fetchall()]
         completed_todos = ','.join(completed_todo_list)
 
-        c.execute('UPDATE todos SET deleted = 1 WHERE user_id = ? AND completed = 1 AND deleted = 0',
+        # 写真保存成功時にマーク済みTODOを削除し、マークを解除
+        c.execute('UPDATE todos SET deleted = 1, marked_for_photo = 0 WHERE user_id = ? AND marked_for_photo = 1',
                   (session['user_id'],))
 
     c.execute('INSERT INTO photos (user_id, image_path, type, date, completed_todos) '
