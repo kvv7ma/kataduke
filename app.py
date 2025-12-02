@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import base64
 
@@ -154,7 +154,8 @@ def add_todo():
         
     data = request.get_json()
     text = data.get('text')
-    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    jst = timezone(timedelta(hours=9))
+    date = datetime.now(jst).strftime('%Y-%m-%d %H:%M:%S')
     
     conn = sqlite3.connect('ui.db')
     c = conn.cursor()
@@ -215,7 +216,8 @@ def save_photo():
     photo_type = request.args.get('type', 'before')  # before/after
 
     # ファイル名
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    jst = timezone(timedelta(hours=9))
+    timestamp = datetime.now(jst).strftime('%Y%m%d_%H%M%S')
     filename = f'photo_{session["user_id"]}_{timestamp}.png'
 
     # ファイルシステム上の保存先（絶対パス）
@@ -245,7 +247,7 @@ def save_photo():
     c.execute('INSERT INTO photos (user_id, image_path, type, date, completed_todos) '
               'VALUES (?, ?, ?, ?, ?)',
               (session['user_id'], db_image_path, photo_type,
-               datetime.now().strftime("%Y-%m-%d"), completed_todos))
+               datetime.now(jst).strftime("%Y-%m-%d"), completed_todos))
 
     conn.commit()
     conn.close()
@@ -296,7 +298,8 @@ def tips():
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
         if title and content:
-            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            jst = timezone(timedelta(hours=9))
+            created_at = datetime.now(jst).strftime('%Y-%m-%d %H:%M:%S')
             conn = sqlite3.connect('ui.db')
             c = conn.cursor()
             c.execute('INSERT INTO tips_posts (title, content, created_at) VALUES (?, ?, ?)',
