@@ -105,6 +105,11 @@
         const saveButton = document.getElementById('saveButton');
         const context = canvas.getContext('2d');
         let stream = null;
+        let photoSaved = false;
+
+        // URLパラメータからtypeを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const photoType = urlParams.get('type') || 'before';
 
         // カメラ開始
         startButton.addEventListener('click', async () => {
@@ -171,7 +176,7 @@
 
         // 写真保存
         saveButton.addEventListener('click', async () => {
-            const response = await fetch('/save_photo', {
+            const response = await fetch(`/save_photo?type=${photoType}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -183,11 +188,38 @@
             });
 
             if (response.ok) {
+                photoSaved = true;
                 alert('写真を保存しました！');
-                window.location.href = "{{ url_for('todo') }}";
+                window.location.href = "{{ url_for('album') }}";
             } else {
                 alert('写真の保存に失敗しました。');
             }
+        });
+
+        // カメラページから離脱するときに復元処理（写真保存成功時以外）
+        window.addEventListener('beforeunload', async (e) => {
+            if (!photoSaved && photoType === 'after') {
+                navigator.sendBeacon('/restore_marked_todos', JSON.stringify({}));
+            }
+        });
+
+        // 戻るボタンやナビリンクをクリックしたときも復元
+        document.querySelectorAll('.back-button, nav a').forEach(link => {
+            link.addEventListener('click', async (e) => {
+                if (!photoSaved && photoType === 'after') {
+                    e.preventDefault();
+                    const href = e.target.href;
+                    try {
+                        await fetch('/restore_marked_todos', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({})
+                        });
+                    } finally {
+                        window.location.href = href;
+                    }
+                }
+            });
         });
     </script>
 </body>
