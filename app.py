@@ -176,6 +176,9 @@ def add_todo():
     conn.commit()
     conn.close()
     
+    # 新しいTODOを追加したので完了状態をクリア
+    session.pop('all_todos_completed_at', None)
+    
     return jsonify({'success': True})
 
 @app.route('/toggle_todo', methods=['POST'])
@@ -190,6 +193,27 @@ def toggle_todo():
     c = conn.cursor()
     c.execute('UPDATE todos SET completed = NOT completed WHERE id = ? AND user_id = ?',
               (todo_id, session['user_id']))
+    
+    # すべてのTODOが完了したかチェック
+    c.execute('''SELECT COUNT(*) FROM todos 
+                 WHERE user_id = ? AND deleted = 0 AND marked_for_photo = 0''',
+              (session['user_id'],))
+    total = c.fetchone()[0]
+    
+    c.execute('''SELECT COUNT(*) FROM todos 
+                 WHERE user_id = ? AND deleted = 0 AND marked_for_photo = 0 AND completed = 1''',
+              (session['user_id'],))
+    completed = c.fetchone()[0]
+    
+    # すべて完了したら完了時刻を記録
+    if total > 0 and total == completed:
+        jst = timezone(timedelta(hours=9))
+        completion_time = datetime.now(jst).strftime('%Y-%m-%d %H:%M:%S')
+        session['all_todos_completed_at'] = completion_time
+    else:
+        # 未完了のTODOがある場合はクリア
+        session.pop('all_todos_completed_at', None)
+    
     conn.commit()
     conn.close()
     
@@ -209,8 +233,75 @@ def delete_todo():
     c.execute('DELETE FROM todos WHERE id = ? AND user_id = ?', (todo_id, session['user_id']))
     conn.commit()
     conn.close()
+    
+    # TODOを削除したので完了状態をクリア
+    session.pop('all_todos_completed_at', None)
 
     return jsonify({'success': True})
+
+
+@app.route('/check_todos_status', methods=['GET'])
+def check_todos_status():
+    """すべてのTODOが完了しているかチェックし、背景画像を決定"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    conn = sqlite3.connect('ui.db')
+    c = conn.cursor()
+    
+    # アクティブなTODO数を取得
+    c.execute('''SELECT COUNT(*) FROM todos 
+                 WHERE user_id = ? AND deleted = 0 AND marked_for_photo = 0''',
+              (session['user_id'],))
+    total = c.fetchone()[0]
+    
+    # 完了したTODO数を取得
+    c.execute('''SELECT COUNT(*) FROM todos 
+                 WHERE user_id = ? AND deleted = 0 AND marked_for_photo = 0 AND completed = 1''',
+              (session['user_id'],))
+    completed = c.fetchone()[0]
+    
+    conn.close()
+    
+    all_completed = (total > 0 and total == completed)
+    completion_time = session.get('all_todos_completed_at', None)
+    
+    # 朝4時のリセット判定
+    should_show_clear = False
+    if all_completed and completion_time:
+        try:
+            jst = timezone(timedelta(hours=9))
+            completed_dt = datetime.strptime(completion_time, '%Y-%m-%d %H:%M:%S')
+            # JSTタイムゾーン情報を追加
+            completed_dt = completed_dt.replace(tzinfo=jst)
+            now = datetime.now(jst)
+            
+            # 完了時刻の翌日の4時を計算
+            next_reset = completed_dt.replace(hour=4, minute=0, second=0, microsecond=0)
+            if completed_dt.hour >= 4:
+                # 4時以降に完了した場合は翌日の4時
+                next_reset += timedelta(days=1)
+            
+            # 現在時刻がリセット時刻より前なら clear を表示
+            should_show_clear = (now < next_reset)
+            
+            # リセット時刻を過ぎていたらセッションをクリア
+            if not should_show_clear:
+                session.pop('all_todos_completed_at', None)
+                
+        except Exception as e:
+            print(f"時刻判定エラー: {e}")
+            should_show_clear = False
+    
+    background = 'mainback_clear.png' if should_show_clear else 'mainback_dirty.png'
+    
+    return jsonify({
+        'success': True,
+        'all_completed': all_completed,
+        'background': background,
+        'total': total,
+        'completed': completed
+    })
 
 
 @app.route('/mark_todos_for_photo', methods=['POST'])
@@ -226,6 +317,10 @@ def mark_todos_for_photo():
                   (session['user_id'],))
         conn.commit()
         conn.close()
+        
+        # マークしたので完了状態をクリア（写真撮影後にリセット）
+        session.pop('all_todos_completed_at', None)
+        
         return jsonify({'success': True})
     except Exception as e:
         print(f"mark_todos_for_photo error: {e}")
