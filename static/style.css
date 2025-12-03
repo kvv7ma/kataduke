@@ -2,10 +2,16 @@
 body, html {
     margin: 0;
     padding: 0;
-    height: 100%;
+    min-height: 100vh;
     font-family: sans-serif;
-    background-color: #fff;
+    background-color: #f5f5f5;
     color: #333;
+}
+
+/* メインページ用の白背景 */
+body.main-page {
+    background-color: #fff;
+    height: 100%;
 }
 
 /* ヘッダーとナビゲーション */
