@@ -5,6 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            margin: 0 0 0.5rem 0;
+        }
+        
+        header nav {
+            margin: 0;
+        }
+        
+        header nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            opacity: 1 !important;
+        }
+        
+        section {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        label {
+            display: block;
+            margin: 0.5rem 0;
+            cursor: pointer;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            background: #45a049;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,7 +93,7 @@
       </nav>
     </header>
 
-    <div class="container visible">
+    <div class="container">
         <p>チェックしたテンプレートを一括で TODO に追加できます。</p>
 
         <form id="templateForm">
