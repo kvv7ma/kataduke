@@ -11,16 +11,21 @@
         function toggleMenu() {
             const menuItems = document.getElementById('menu-items');
             const menuButton = document.querySelector('.menu-button');
+            const menuIcon = document.querySelector('.menu-icon');
             
-            if (menuItems && menuButton) {
+            if (menuItems && menuButton && menuIcon) {
                 const isVisible = menuItems.classList.contains('visible');
                 
                 if (isVisible) {
                     menuItems.classList.remove('visible');
                     menuButton.classList.remove('active');
+                    // 元の画像に戻す
+                    menuIcon.src = "{{ url_for('static', filename='images/menu_hako.png') }}";
                 } else {
                     menuItems.classList.add('visible');
                     menuButton.classList.add('active');
+                    // 空の画像に変更
+                    menuIcon.src = "{{ url_for('static', filename='images/menu_hako_empty.png') }}";
                 }
             }
         }
@@ -46,11 +51,14 @@
             
             // メニュー外をクリックしたときにメニューを閉じる
             document.addEventListener('click', function(e) {
-                if (menuItems && menuButton && 
+                const menuIcon = document.querySelector('.menu-icon');
+                if (menuItems && menuButton && menuIcon &&
                     !menuButton.contains(e.target) && 
                     !menuItems.contains(e.target)) {
                     menuItems.classList.remove('visible');
                     menuButton.classList.remove('active');
+                    // 元の画像に戻す
+                    menuIcon.src = "{{ url_for('static', filename='images/menu_hako.png') }}";
                 }
             });
             
