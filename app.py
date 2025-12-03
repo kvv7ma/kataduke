@@ -159,6 +159,13 @@ def todo():
     
     return render_template('todo.html', todos=todos)
 
+
+@app.route('/template')
+def template_page():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('template.html')
+
 @app.route('/add_todo', methods=['POST'])
 def add_todo():
     if 'user_id' not in session:

@@ -113,12 +113,16 @@
       <h1>KATADUKE TODO</h1>
         <nav>
             <a href="/main">ホーム</a> |
-            <a href="/camera">カメラ</a> |
-            <a href="/album">アルバム</a> |
-            <a href="/tips">TIPS</a>
+                <a href="/camera">カメラ</a> |
+                <a href="/album">アルバム</a> |
+                <a href="/tips">TIPS</a> |
+                <a href="/template">テンプレート</a>
     </header>
     <div class="todo-container">
         <h1>TODOリスト</h1>
+        <div style="margin:0.5rem 0 1rem 0;">
+            <a href="/template" class="button">テンプレートからタスクを追加する</a>
+        </div>
         
         {% if photo %}
         <div class="photo-section">
