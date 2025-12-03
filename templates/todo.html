@@ -122,20 +122,34 @@
         .template-buttons .button {
             flex: 1;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.2;
         }
 
         /* スマホでの縦並び表示 */
         @media (max-width: 480px) {
             .template-buttons {
                 flex-direction: column;
-                gap: 12px;
+                gap: 10px;
             }
             
             .template-buttons .button {
                 width: 100%;
-                padding: 0.8rem 1rem;
-                font-size: 0.9rem;
+                padding: 0.7rem 1rem;
+                font-size: 0.85rem;
             }
+        }
+        
+        /* 削除ボタンのスタイル調整 */
+        a.button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
         }
     </style>
 </head>
