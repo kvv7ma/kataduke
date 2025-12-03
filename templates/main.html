@@ -72,7 +72,30 @@
                     menuButton.classList.remove('active');
                 }
             });
+            
+            // 背景画像をTODO完了状態に応じて更新
+            updateBackground();
         });
+        
+        // 背景画像を更新する関数
+        async function updateBackground() {
+            try {
+                const response = await fetch('/check_todos_status');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const backgroundImage = document.querySelector('.background-image');
+                        if (backgroundImage) {
+                            const newSrc = "{{ url_for('static', filename='images/') }}" + data.background;
+                            backgroundImage.src = newSrc;
+                            console.log('背景を更新:', data.background);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('背景更新エラー:', error);
+            }
+        }
     </script>
 </head>
 <body>
