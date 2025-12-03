@@ -602,9 +602,10 @@ def tips():
     current_user_display_name = None
     if 'user_id' in session:
         c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
-        user_data = c.fetchone()
-        # display_nameがNoneまたは空文字列の場合はNoneとする
-        current_user_display_name = user_data[0] if user_data and user_data[0] and user_data[0].strip() else None
+        user_result = c.fetchone()
+        if user_result and user_result[0]:
+            display_name = user_result[0].strip()
+            current_user_display_name = display_name if display_name else None
     
     conn.close()
     return render_template('tips.html', posts=posts, year=datetime.now().year, 
