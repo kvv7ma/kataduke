@@ -120,7 +120,8 @@
     <div class="todo-container">
         <h1>TODOリスト</h1>
         <div style="margin:0.5rem 0 1rem 0;">
-            <a href="/template" class="button">テンプレートからタスクを追加する</a>
+            <a href="/template" class="button">テンプレートから追加</a>
+            <a href="/custom" class="button" style="background:#2196F3; margin-left:8px;">マイテンプレートから追加</a>
         </div>
         
         {% if photo %}
@@ -140,10 +141,11 @@
             <div class="todo-item">
                 <input type="checkbox" class="todo-checkbox" 
                        {% if todo.completed %}checked{% endif %}
-                       onchange="toggleTodo({{ todo.id }})">
+                       data-todo-id="{{ todo.id }}"
+                       onchange="toggleTodo(this.dataset.todoId)">
                 <span class="todo-text">{{ todo.text }}</span>
                 <span class="todo-date">{{ todo.date }}</span>
-                <button class="todo-delete" onclick="deleteTodo({{ todo.id }})">削除</button>
+                <button class="todo-delete" data-todo-id="{{ todo.id }}" onclick="deleteTodo(this.dataset.todoId)">削除</button>
             </div>
             {% endfor %}
         </div>

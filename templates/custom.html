@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>カスタムテンプレート - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            margin: 0 0 0.5rem 0;
+        }
+        
+        header nav {
+            margin: 0;
+        }
+        
+        header nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            opacity: 1 !important;
+        }
+        
+        .add-template-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #e8f5e9;
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .container > p {
+            text-align: left;
+        }
+        
+        .add-template-section h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        .form-group {
+            margin: 1rem 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        section {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            text-align: left;
+            position: relative;
+        }
+        
+        section h2 {
+            margin-top: 0;
+            color: #333;
+            display: inline-block;
+        }
+        
+        .delete-section-btn {
+            float: right;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .delete-section-btn:hover {
+            background: #d94336;
+        }
+        
+        label {
+            display: block;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            text-align: left;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            background: #45a049;
+        }
+        
+        .button-secondary {
+            background: #2196F3;
+        }
+        
+        .button-secondary:hover {
+            background: #1976D2;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <h1>KATADUKE カスタムテンプレート</h1>
+      <nav>
+        <a href="/main">ホーム</a> |
+        <a href="/todo">TODO</a> |
+        <a href="/template">基本テンプレート</a>
+      </nav>
+    </header>
+
+    <div class="container">
+        <!-- 新規テンプレート追加フォーム -->
+        <div class="add-template-section">
+            <h3>✨ 新しいテンプレートを追加</h3>
+            <div class="form-group">
+                <label>カテゴリ名（例: 🏠 リビング掃除）</label>
+                <input type="text" id="newCategoryName" placeholder="カテゴリ名を入力してください">
+            </div>
+            <div class="form-group">
+                <label>タスクリスト（1行に1つのタスクを入力）</label>
+                <textarea id="newTaskList" placeholder="例:&#10;ソファの下を掃除機で掃除する&#10;テレビ周りのホコリを拭く&#10;リモコンを整理する"></textarea>
+            </div>
+            <button type="button" onclick="addCustomTemplate()" class="button button-secondary">テンプレートを追加</button>
+        </div>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 2px solid #ddd;">
+
+        <!-- 既存のカスタムテンプレート表示 -->
+        <p><strong>チェックしたタスクを一括で TODO に追加できます。</strong></p>
+        
+        <form id="templateForm">
+            <div id="customTemplates">
+                {% if templates and templates|length > 0 %}
+                    {% for template in templates %}
+                    <section data-template-id="{{ template.id }}">
+                        <button type="button" class="delete-section-btn" data-template-id="{{ template.id }}" onclick="deleteTemplate(this.dataset.templateId)">削除</button>
+                        <h2>{{ template.category_name }}</h2>
+                        <div style="clear: both;"></div>
+                        {% for task in template.tasks %}
+                        <label><input type="checkbox" name="task" value="{{ task }}"> {{ task }}</label><br>
+                        {% endfor %}
+                    </section>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">
+                        まだカスタムテンプレートがありません。<br>
+                        上のフォームから新しいテンプレートを追加してください。
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top:1rem;">
+                <button type="button" onclick="addSelected()" class="button">選択したタスクを TODO に追加</button>
+                <a href="/todo" class="button" style="background:#ccc; color:#000; margin-left:8px;">キャンセル</a>
+            </div>
+        </form>
+    </div>
+
+<script>
+// カスタムテンプレートを追加
+async function addCustomTemplate() {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    const taskList = document.getElementById('newTaskList').value.trim();
+    
+    if (!categoryName) {
+        alert('カテゴリ名を入力してください。');
+        return;
+    }
+    
+    if (!taskList) {
+        alert('タスクを入力してください。');
+        return;
+    }
+    
+    // タスクを行ごとに分割
+    const tasks = taskList.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+    
+    if (tasks.length === 0) {
+        alert('有効なタスクを入力してください。');
+        return;
+    }
+    
+    try {
+        const resp = await fetch('/add_custom_template', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category_name: categoryName, tasks: tasks })
+        });
+        const data = await resp.json();
+        
+        if (data.success) {
+            alert('テンプレートを追加しました！');
+            window.location.reload();
+        } else {
+            alert('テンプレートの追加に失敗しました: ' + (data.error || '不明なエラー'));
+        }
+    } catch (e) {
+        alert('ネットワークエラーが発生しました。');
+    }
+}
+
+// テンプレートを削除
+async function deleteTemplate(templateId) {
+    if (!confirm('このテンプレートを削除しますか？')) {
+        return;
+    }
+    
+    try {
+        const resp = await fetch('/delete_custom_template', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: templateId })
+        });
+        const data = await resp.json();
+        
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('削除に失敗しました: ' + (data.error || '不明なエラー'));
+        }
+    } catch (e) {
+        alert('ネットワークエラーが発生しました。');
+    }
+}
+
+// 選択したタスクをTODOに追加
+async function addSelected() {
+    const checked = Array.from(document.querySelectorAll('input[name="task"]:checked'));
+    if (checked.length === 0) {
+        alert('タスクを1つ以上選択してください。');
+        return;
+    }
+
+    // 追加処理を順に行う
+    for (const cb of checked) {
+        const text = cb.value;
+        try {
+            const resp = await fetch('/add_todo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await resp.json();
+            if (!data.success) {
+                alert('TODO の追加に失敗しました。ログイン状態を確認してください。');
+                return;
+            }
+        } catch (e) {
+            alert('ネットワークエラーが発生しました。');
+            return;
+        }
+    }
+
+    // すべて追加できたら TODO リストへ移動
+    window.location.href = '/todo';
+}
+</script>
+</body>
+</html>

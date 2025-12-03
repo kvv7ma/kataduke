@@ -74,6 +74,15 @@ def init_db():
                 content TEXT NOT NULL,
                 created_at TEXT NOT NULL)''')
     
+    # カスタムテンプレートテーブル
+    c.execute('''CREATE TABLE IF NOT EXISTS custom_templates
+                (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                category_name TEXT NOT NULL,
+                tasks TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES user (id))''')
+    
     # テストユーザーの追加
     try:
         c.execute('INSERT INTO user (username, password) VALUES (?, ?)',
@@ -165,6 +174,86 @@ def template_page():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('template.html')
+
+@app.route('/custom')
+def custom_page():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # ユーザーのカスタムテンプレートを取得
+    conn = sqlite3.connect('ui.db')
+    c = conn.cursor()
+    c.execute('''SELECT id, category_name, tasks FROM custom_templates 
+                 WHERE user_id = ? ORDER BY created_at DESC''', (session['user_id'],))
+    
+    templates = []
+    for row in c.fetchall():
+        template_id, category_name, tasks_str = row
+        tasks = tasks_str.split('|||')  # タスクを分割
+        templates.append({
+            'id': template_id,
+            'category_name': category_name,
+            'tasks': tasks
+        })
+    
+    conn.close()
+    return render_template('custom.html', templates=templates)
+
+@app.route('/add_custom_template', methods=['POST'])
+def add_custom_template():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    try:
+        data = request.get_json()
+        category_name = data.get('category_name', '').strip()
+        tasks = data.get('tasks', [])
+        
+        if not category_name or not tasks:
+            return jsonify({'success': False, 'error': 'カテゴリ名とタスクは必須です'})
+        
+        # タスクを文字列に結合（区切り文字: |||）
+        tasks_str = '|||'.join(tasks)
+        
+        jst = timezone(timedelta(hours=9))
+        created_at = datetime.now(jst).strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn = sqlite3.connect('ui.db')
+        c = conn.cursor()
+        c.execute('''INSERT INTO custom_templates (user_id, category_name, tasks, created_at) 
+                     VALUES (?, ?, ?, ?)''',
+                  (session['user_id'], category_name, tasks_str, created_at))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"add_custom_template error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/delete_custom_template', methods=['POST'])
+def delete_custom_template():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    try:
+        data = request.get_json()
+        template_id = data.get('id')
+        
+        if template_id is None:
+            return jsonify({'success': False, 'error': 'IDが指定されていません'}), 400
+        
+        conn = sqlite3.connect('ui.db')
+        c = conn.cursor()
+        c.execute('DELETE FROM custom_templates WHERE id = ? AND user_id = ?', 
+                  (template_id, session['user_id']))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"delete_custom_template error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/add_todo', methods=['POST'])
 def add_todo():
