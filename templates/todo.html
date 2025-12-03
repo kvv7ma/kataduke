@@ -33,13 +33,18 @@
         }
 
         .todo-checkbox {
-            margin-right: 1rem;
+            margin-right: 0.5rem;
             width: 20px;
             height: 20px;
         }
 
+        .todo-select {
+            margin-right: 0.8rem;
+        }
+
         .todo-text {
             flex-grow: 1;
+            margin-left: 0.5rem;
         }
 
         .todo-date {
@@ -50,12 +55,15 @@
 
         .todo-form {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             margin-bottom: 1rem;
+            flex-wrap: nowrap;
         }
 
         .todo-input {
             flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 0;
             padding: 0.5rem;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -68,6 +76,8 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .todo-add:hover {
@@ -139,14 +149,19 @@
         <div class="todo-list" id="todoList">
             {% for todo in todos %}
             <div class="todo-item">
-                <input type="checkbox" class="todo-checkbox" 
+                <input type="checkbox" class="todo-checkbox todo-select" 
+                       data-todo-id="{{ todo.id }}">
+                <input type="checkbox" class="todo-checkbox todo-complete" 
                        {% if todo.completed %}checked{% endif %}
                        data-todo-id="{{ todo.id }}"
                        onchange="toggleTodo(this.dataset.todoId)">
                 <span class="todo-text">{{ todo.text }}</span>
-                <button class="todo-delete" data-todo-id="{{ todo.id }}" onclick="deleteTodo(this.dataset.todoId)">削除</button>
             </div>
             {% endfor %}
+        </div>
+
+        <div style="margin:1rem 0;">
+            <button class="button" style="background:#e74c3c;" onclick="deleteSelectedTodos()">選択したタスクを削除</button>
         </div>
 
         <a href="{{ url_for('main') }}" class="back-button">戻る</a>
@@ -225,22 +240,41 @@
             }
         }
 
-        async function deleteTodo(id) {
-            if (!confirm('このTODOを削除しますか？')) return;
-
-            const response = await fetch('/delete_todo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id })
-            });
-
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                alert('削除に失敗しました');
+        async function deleteSelectedTodos() {
+            const selected = Array.from(document.querySelectorAll('.todo-select:checked'));
+            
+            if (selected.length === 0) {
+                alert('削除するタスクを選択してください。');
+                return;
             }
+
+            if (!confirm(`選択した${selected.length}件のタスクを削除しますか？`)) return;
+
+            // 選択されたタスクのIDを取得
+            const ids = selected.map(cb => cb.dataset.todoId);
+
+            // 順番に削除
+            for (const id of ids) {
+                try {
+                    const response = await fetch('/delete_todo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id })
+                    });
+
+                    if (!response.ok) {
+                        alert('削除に失敗しました');
+                        return;
+                    }
+                } catch (e) {
+                    alert('ネットワークエラーが発生しました');
+                    return;
+                }
+            }
+
+            window.location.reload();
         }
     </script>
 </body>
