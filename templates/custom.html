@@ -11,28 +11,29 @@
         }
         
         header {
-            background: white;
-            padding: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 1rem;
         }
         
         header h1 {
-            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            margin: 0 0 1rem 0;
         }
         
         header nav {
-            margin: 0;
+            margin-top: 1rem;
         }
         
         header nav a {
-            color: #007bff;
+            color: #333;
             text-decoration: none;
-            margin: 0 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
         }
         
         header nav a:hover {
-            text-decoration: underline;
+            background: #f0f0f0;
         }
         
         .container {
@@ -118,6 +119,21 @@
             background: #d94336;
         }
         
+        .delete-task-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 0.5rem;
+        }
+        
+        .delete-task-btn:hover {
+            background: #d94336;
+        }
+        
         label {
             display: block;
             margin: 0.5rem 0;
@@ -163,7 +179,7 @@
 </head>
 <body>
     <header>
-      <h1>KATADUKE カスタムテンプレート</h1>
+      <h1>KATADUKE MYTEMPLATE</h1>
       <nav>
         <a href="/main">ホーム</a> |
         <a href="/todo">TODO</a> |
@@ -172,42 +188,39 @@
     </header>
 
     <div class="container">
-        <!-- 新規テンプレート追加フォーム -->
+        <!-- 新規タスク追加フォーム -->
         <div class="add-template-section">
-            <h3>✨ 新しいテンプレートを追加</h3>
+            <h3>✨ マイタスクを追加</h3>
             <div class="form-group">
-                <label>カテゴリ名（例: 🏠 リビング掃除）</label>
-                <input type="text" id="newCategoryName" placeholder="カテゴリ名を入力してください">
+                <label>タスク内容</label>
+                <input type="text" id="newTaskInput" placeholder="追加したいタスクを入力してください">
             </div>
-            <div class="form-group">
-                <label>タスクリスト（1行に1つのタスクを入力）</label>
-                <textarea id="newTaskList" placeholder="例:&#10;ソファの下を掃除機で掃除する&#10;テレビ周りのホコリを拭く&#10;リモコンを整理する"></textarea>
-            </div>
-            <button type="button" onclick="addCustomTemplate()" class="button button-secondary">テンプレートを追加</button>
+            <button type="button" onclick="addCustomTask()" class="button button-secondary">タスクを追加</button>
         </div>
 
         <hr style="margin: 2rem 0; border: none; border-top: 2px solid #ddd;">
 
-        <!-- 既存のカスタムテンプレート表示 -->
+        <!-- 既存のマイタスク表示 -->
         <p><strong>チェックしたタスクを一括で TODO に追加できます。</strong></p>
         
         <form id="templateForm">
             <div id="customTemplates">
                 {% if templates and templates|length > 0 %}
-                    {% for template in templates %}
-                    <section data-template-id="{{ template.id }}">
-                        <button type="button" class="delete-section-btn" data-template-id="{{ template.id }}" onclick="deleteTemplate(this.dataset.templateId)">削除</button>
-                        <h2>{{ template.category_name }}</h2>
-                        <div style="clear: both;"></div>
-                        {% for task in template.tasks %}
-                        <label><input type="checkbox" name="task" value="{{ task }}"> {{ task }}</label><br>
+                    <section>
+                        <h2>📋 マイタスクリスト</h2>
+                        {% for template in templates %}
+                            {% for task in template.tasks %}
+                            <label>
+                                <input type="checkbox" name="task" value="{{ task }}"> {{ task }}
+                                <button type="button" class="delete-task-btn" data-template-id="{{ template.id }}" onclick="deleteTemplate(this.dataset.templateId)">削除</button>
+                            </label><br>
+                            {% endfor %}
                         {% endfor %}
                     </section>
-                    {% endfor %}
                 {% else %}
                     <div class="empty-message">
-                        まだカスタムテンプレートがありません。<br>
-                        上のフォームから新しいテンプレートを追加してください。
+                        まだマイタスクがありません。<br>
+                        上のフォームから新しいタスクを追加してください。
                     </div>
                 {% endif %}
             </div>
@@ -220,26 +233,12 @@
     </div>
 
 <script>
-// カスタムテンプレートを追加
-async function addCustomTemplate() {
-    const categoryName = document.getElementById('newCategoryName').value.trim();
-    const taskList = document.getElementById('newTaskList').value.trim();
+// カスタムタスクを追加
+async function addCustomTask() {
+    const taskInput = document.getElementById('newTaskInput').value.trim();
     
-    if (!categoryName) {
-        alert('カテゴリ名を入力してください。');
-        return;
-    }
-    
-    if (!taskList) {
+    if (!taskInput) {
         alert('タスクを入力してください。');
-        return;
-    }
-    
-    // タスクを行ごとに分割
-    const tasks = taskList.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-    
-    if (tasks.length === 0) {
-        alert('有効なタスクを入力してください。');
         return;
     }
     
@@ -247,24 +246,24 @@ async function addCustomTemplate() {
         const resp = await fetch('/add_custom_template', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ category_name: categoryName, tasks: tasks })
+            body: JSON.stringify({ category_name: 'マイタスク', tasks: [taskInput] })
         });
         const data = await resp.json();
         
         if (data.success) {
-            alert('テンプレートを追加しました！');
+            alert('タスクを追加しました！');
             window.location.reload();
         } else {
-            alert('テンプレートの追加に失敗しました: ' + (data.error || '不明なエラー'));
+            alert('タスクの追加に失敗しました: ' + (data.error || '不明なエラー'));
         }
     } catch (e) {
         alert('ネットワークエラーが発生しました。');
     }
 }
 
-// テンプレートを削除
+// タスクを削除
 async function deleteTemplate(templateId) {
-    if (!confirm('このテンプレートを削除しますか？')) {
+    if (!confirm('このタスクを削除しますか？')) {
         return;
     }
     
