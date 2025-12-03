@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>テンプレート - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+      <h1>テンプレートタスク</h1>
+      <nav>
+        <a href="/main">ホーム</a> |
+        <a href="/todo">TODO</a>
+      </nav>
+    </header>
+
+    <div class="container">
+        <p>チェックしたテンプレートを一括で TODO に追加できます。</p>
+
+        <form id="templateForm">
+            <section>
+                <h2>🌟 まず最初にやる系（短時間で効果大）</h2>
+                <label><input type="checkbox" name="task" value="ゴミを全部まとめて捨てる（紙・ペットボトルなど分別）"> ゴミを全部まとめて捨てる（紙・ペットボトルなど分別）</label><br>
+                <label><input type="checkbox" name="task" value="床に落ちてる物を「使うもの／使わないもの」でざっくり分ける"> 床に落ちてる物を「使うもの／使わないもの」でざっくり分ける</label><br>
+                <label><input type="checkbox" name="task" value="机の上の物をいったん全部どかして、必要なものだけ戻す"> 机の上の物をいったん全部どかして、必要なものだけ戻す</label><br>
+                <label><input type="checkbox" name="task" value="ベッド周りを整える（シーツ直す・周りの本や充電器を整理）"> ベッド周りを整える（シーツ直す・周りの本や充電器を整理）</label><br>
+                <label><input type="checkbox" name="task" value="洗濯物を全部「洗うもの／しまうもの」に分ける"> 洗濯物を全部「洗うもの／しまうもの」に分ける</label>
+            </section>
+
+            <section>
+                <h2>📚 勉強スペースを整えたいとき</h2>
+                <label><input type="checkbox" name="task" value="机の上に“毎日使うものだけ”を置く"> 机の上に“毎日使うものだけ”を置く</label><br>
+                <label><input type="checkbox" name="task" value="文房具を仕分け（使う／使わない／ストック）"> 文房具を仕分け（使う／使わない／ストック）</label><br>
+                <label><input type="checkbox" name="task" value="教科書やノートを教科別にまとめる"> 教科書やノートを教科別にまとめる</label><br>
+                <label><input type="checkbox" name="task" value="充電ケーブルをまとめる（結束バンドやクリップでOK）"> 充電ケーブルをまとめる（結束バンドやクリップでOK）</label><br>
+                <label><input type="checkbox" name="task" value="デスクまわりを軽く拭く"> デスクまわりを軽く拭く</label>
+            </section>
+
+            <section>
+                <h2>🗂️ 収納を整えるとき</h2>
+                <label><input type="checkbox" name="task" value="服のカテゴリー分け（トップス／ボトムス／よく着る／部屋着など）"> 服のカテゴリー分け（トップス／ボトムス／よく着る／部屋着など）</label><br>
+                <label><input type="checkbox" name="task" value="いま着ない服は奥、よく着る服は手前に"> いま着ない服は奥、よく着る服は手前に</label><br>
+                <label><input type="checkbox" name="task" value="本やマンガをジャンル別・シリーズ別に揃える"> 本やマンガをジャンル別・シリーズ別に揃える</label><br>
+                <label><input type="checkbox" name="task" value="小物を“種類ごと”にケースや箱に入れる"> 小物を“種類ごと”にケースや箱に入れる</label><br>
+                <label><input type="checkbox" name="task" value="引き出しをひとつだけ選んで中身を全部出し、必要なものだけ戻す"> 引き出しをひとつだけ選んで中身を全部出し、必要なものだけ戻す</label>
+            </section>
+
+            <div style="margin-top:1rem;">
+                <button type="button" onclick="addSelected()" class="button">選択したタスクを TODO に追加</button>
+                <a href="/todo" class="button" style="background:#ccc; color:#000; margin-left:8px;">キャンセル</a>
+            </div>
+        </form>
+    </div>
+
+<script>
+async function addSelected() {
+    const checked = Array.from(document.querySelectorAll('input[name="task"]:checked'));
+    if (checked.length === 0) {
+        alert('タスクを1つ以上選択してください。');
+        return;
+    }
+
+    // 追加処理を順に行う
+    for (const cb of checked) {
+        const text = cb.value;
+        try {
+            const resp = await fetch('/add_todo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await resp.json();
+            if (!data.success) {
+                alert('TODO の追加に失敗しました。ログイン状態を確認してください。');
+                return;
+            }
+        } catch (e) {
+            alert('ネットワークエラーが発生しました。');
+            return;
+        }
+    }
+
+    // すべて追加できたら TODO リストへ移動
+    window.location.href = '/todo';
+}
+</script>
+</body>
+</html>
