@@ -144,7 +144,6 @@
                        data-todo-id="{{ todo.id }}"
                        onchange="toggleTodo(this.dataset.todoId)">
                 <span class="todo-text">{{ todo.text }}</span>
-                <span class="todo-date">{{ todo.date }}</span>
                 <button class="todo-delete" data-todo-id="{{ todo.id }}" onclick="deleteTodo(this.dataset.todoId)">削除</button>
             </div>
             {% endfor %}
