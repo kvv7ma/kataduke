@@ -33,18 +33,13 @@
         }
 
         .todo-checkbox {
-            margin-right: 0.5rem;
+            margin-right: 1rem;
             width: 20px;
             height: 20px;
         }
 
-        .todo-select {
-            margin-right: 0.8rem;
-        }
-
         .todo-text {
             flex-grow: 1;
-            margin-left: 0.5rem;
         }
 
         .todo-date {
@@ -175,9 +170,7 @@
         <div class="todo-list" id="todoList">
             {% for todo in todos %}
             <div class="todo-item">
-                <input type="checkbox" class="todo-checkbox todo-select" 
-                       data-todo-id="{{ todo.id }}">
-                <input type="checkbox" class="todo-checkbox todo-complete" 
+                <input type="checkbox" class="todo-checkbox" 
                        {% if todo.completed %}checked{% endif %}
                        data-todo-id="{{ todo.id }}"
                        onchange="toggleTodo(this.dataset.todoId)">
@@ -187,7 +180,7 @@
         </div>
 
         <div style="margin:1rem 0;">
-            <button class="button" style="background:#e74c3c;" onclick="deleteSelectedTodos()">選択したタスクを削除</button>
+            <a href="/delete" class="button" style="background:#e74c3c;">タスクを削除</a>
         </div>
 
         <a href="{{ url_for('main') }}" class="back-button">戻る</a>
@@ -266,42 +259,7 @@
             }
         }
 
-        async function deleteSelectedTodos() {
-            const selected = Array.from(document.querySelectorAll('.todo-select:checked'));
-            
-            if (selected.length === 0) {
-                alert('削除するタスクを選択してください。');
-                return;
-            }
 
-            if (!confirm(`選択した${selected.length}件のタスクを削除しますか？`)) return;
-
-            // 選択されたタスクのIDを取得
-            const ids = selected.map(cb => cb.dataset.todoId);
-
-            // 順番に削除
-            for (const id of ids) {
-                try {
-                    const response = await fetch('/delete_todo', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id })
-                    });
-
-                    if (!response.ok) {
-                        alert('削除に失敗しました');
-                        return;
-                    }
-                } catch (e) {
-                    alert('ネットワークエラーが発生しました');
-                    return;
-                }
-            }
-
-            window.location.reload();
-        }
     </script>
 </body>
 </html>

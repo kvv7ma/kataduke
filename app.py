@@ -200,6 +200,23 @@ def template_page():
         return redirect(url_for('login'))
     return render_template('template.html')
 
+@app.route('/delete')
+def delete_page():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = sqlite3.connect('ui.db')
+    c = conn.cursor()
+    
+    # 削除されていない、かつマークされていないTODOのみ表示
+    c.execute('''SELECT t.* FROM todos t
+                WHERE t.user_id = ? AND t.deleted = 0 AND t.marked_for_photo = 0
+                ORDER BY t.date DESC''', (session['user_id'],))
+    todos = [{'id': row[0], 'text': row[2], 'completed': row[3], 'date': row[4]} for row in c.fetchall()]
+    conn.close()
+    
+    return render_template('delete.html', todos=todos)
+
 @app.route('/custom')
 def custom_page():
     if 'user_id' not in session:

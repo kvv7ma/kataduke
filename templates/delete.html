@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>タスク削除 - 片付けアプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tips.css') }}">
+    <style>
+        .todo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .todo-list {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-checkbox {
+            margin-right: 1rem;
+            width: 20px;
+            height: 20px;
+        }
+
+        .todo-text {
+            flex-grow: 1;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        .delete-button {
+            background: #e74c3c;
+        }
+
+        .delete-button:hover {
+            background: #d94336;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <h1>KATADUKE タスク削除</h1>
+        <nav>
+            <a href="/main">ホーム</a> |
+            <a href="/todo">TODO</a> |
+    </header>
+    <div class="todo-container">
+        <h1>削除するタスクを選択</h1>
+
+        <div class="todo-list" id="todoList">
+            {% for todo in todos %}
+            <div class="todo-item">
+                <input type="checkbox" class="todo-checkbox" 
+                       data-todo-id="{{ todo.id }}">
+                <span class="todo-text">{{ todo.text }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="margin:1rem 0;">
+            <button class="button delete-button" onclick="deleteSelectedTodos()">選択したタスクを削除</button>
+            <a href="/todo" class="button" style="background:#ccc; color:#000; margin-left:8px;">キャンセル</a>
+        </div>
+    </div>
+
+    <script>
+        async function deleteSelectedTodos() {
+            const selected = Array.from(document.querySelectorAll('.todo-checkbox:checked'));
+            
+            if (selected.length === 0) {
+                alert('削除するタスクを選択してください。');
+                return;
+            }
+
+            if (!confirm(`選択した${selected.length}件のタスクを削除しますか？`)) return;
+
+            // 選択されたタスクのIDを取得
+            const ids = selected.map(cb => cb.dataset.todoId);
+
+            // 順番に削除
+            for (const id of ids) {
+                try {
+                    const response = await fetch('/delete_todo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id })
+                    });
+
+                    if (!response.ok) {
+                        alert('削除に失敗しました');
+                        return;
+                    }
+                } catch (e) {
+                    alert('ネットワークエラーが発生しました');
+                    return;
+                }
+            }
+
+            // 削除完了後、TODOページにリダイレクト
+            window.location.href = '/todo';
+        }
+    </script>
+</body>
+</html>
