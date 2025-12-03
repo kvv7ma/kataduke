@@ -33,6 +33,25 @@
             padding: 0.5rem 1rem;
             border-radius: 5px;
             margin-bottom: 1rem;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .date-header:hover {
+            background: #45a049;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .date-section.collapsed .toggle-icon {
+            transform: rotate(-90deg);
         }
 
         .photo-grid {
@@ -40,6 +59,14 @@
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1rem;
             margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .date-section.collapsed .photo-grid {
+            max-height: 0;
+            margin-bottom: 0;
+            opacity: 0;
         }
 
         .photo-item {
@@ -63,11 +90,33 @@
         .photo-time {
             font-size: 0.9rem;
             color: #666;
+            margin-bottom: 0.3rem;
         }
 
         .photo-todos {
             margin-top: 0.5rem;
-            font-size: 0.9rem;
+        }
+
+        .todo-label {
+            font-size: 0.8rem;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .todo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .todo-tag {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            border: 1px solid #c8e6c9;
         }
 
         .photo-type {
@@ -116,6 +165,59 @@
             text-decoration: none;
             margin-top: 2rem;
         }
+
+        /* 写真がない時のキャラクター表示 */
+        .no-photos-section {
+            text-align: center;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .character-container {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto;
+        }
+
+        .character-image {
+            width: 150px;
+            height: auto;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-size: 14px;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 10px solid transparent;
+            border-top-color: white;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 12px solid transparent;
+            border-top-color: #333;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
@@ -132,10 +234,14 @@
     <div class="album-container">
         <h1>アルバム</h1>
 
+        {% if photos %}
         {# ========= 日付ごとのグループ化 ========= #}
         {% for date, entries in photos|groupby('date') %}
-        <div class="date-section">
-            <h2 class="date-header">{{ date }}</h2>
+        <div class="date-section" id="section-{{ loop.index }}">
+            <h2 class="date-header" onclick="toggleDateSection('section-{{ loop.index }}')">
+                <span>{{ date }}</span>
+                <span class="toggle-icon">▼</span>
+            </h2>
 
             <div class="photo-grid">
                 {% for photo in entries %}
@@ -153,12 +259,12 @@
 
                         {% if photo.todos %}
                         <div class="photo-todos">
-                            <strong>完了したTODO:</strong>
-                            <ul>
+                            <div class="todo-label">完了したTODO</div>
+                            <div class="todo-tags">
                                 {% for todo in photo.todos %}
-                                <li>{{ todo }}</li>
+                                <span class="todo-tag">{{ todo }}</span>
                                 {% endfor %}
-                            </ul>
+                            </div>
                         </div>
                         {% endif %}
                     </div>
@@ -167,6 +273,19 @@
             </div>
         </div>
         {% endfor %}
+        {% else %}
+        {# ========= 写真がない場合のキャラクター表示 ========= #}
+        <div class="no-photos-section">
+            <div class="character-container">
+                <div class="speech-bubble">
+                    まだ写真がないよ！<br>
+                    TODOを完了してカメラで撮影してみてね！
+                </div>
+                <img src="{{ url_for('static', filename='images/char_front.png') }}" 
+                     alt="キャラクター" class="character-image">
+            </div>
+        </div>
+        {% endif %}
 
         <a href="{{ url_for('main') }}" class="back-button">戻る</a>
     </div>
@@ -200,6 +319,11 @@
                 alert('エラーが発生しました: ' + error.message);
             });
         }
+    }
+
+    function toggleDateSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.classList.toggle('collapsed');
     }
     </script>
 </body>

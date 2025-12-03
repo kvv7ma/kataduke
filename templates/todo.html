@@ -195,7 +195,9 @@
                             try {
                                 const resp = await fetch('/mark_todos_for_photo', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
                                     body: JSON.stringify({})
                                 });
                                 if (!resp.ok) throw new Error('mark failed');
