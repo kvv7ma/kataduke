@@ -106,6 +106,32 @@
             color: #6b6b6b;
             transition: color 0.3s ease;
         }
+
+        /* テンプレートボタンのスタイル */
+        .template-buttons {
+            margin: 0.5rem 0 1rem 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .template-buttons .button {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* スマホでの縦並び表示 */
+        @media (max-width: 480px) {
+            .template-buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .template-buttons .button {
+                width: 100%;
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -119,9 +145,9 @@
     </header>
     <div class="todo-container">
         <h1>TODOリスト</h1>
-        <div style="margin:0.5rem 0 1rem 0;">
+        <div class="template-buttons">
             <a href="/template" class="button">テンプレートから追加</a>
-            <a href="/custom" class="button" style="margin-left:8px;">マイテンプレートから追加</a>
+            <a href="/custom" class="button">マイテンプレートから追加</a>
         </div>
         
         {% if photo %}

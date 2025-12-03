@@ -48,6 +48,95 @@ nav a:hover {
   background: #f0f0f0;
 }
 
+/* ユーザー名設定セクション */
+.username-section {
+  background: #e8f4fd;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+.username-section h2 {
+  color: #1976D2;
+  margin-top: 0;
+}
+
+.username-section form div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.username-section button {
+  padding: 0.5rem 1rem;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.username-section button:hover {
+  background: #1976D2;
+}
+
+/* 現在のユーザー表示 */
+.user-info {
+  background: #f0f8f0;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #4CAF50;
+}
+
+.current-user {
+  margin: 0 0 0.5rem 0;
+}
+
+.user-info details {
+  margin-top: 0.8rem;
+}
+
+.user-info summary {
+  cursor: pointer;
+  color: #666;
+  font-size: 0.9rem;
+  padding: 0.3rem 0;
+}
+
+.user-info summary:hover {
+  color: #333;
+}
+
+.notice {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #ffc107;
+}
+
+/* 投稿メタ情報 */
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.post-author {
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.post-date {
+  color: #999;
+}
+
 section {
   margin: 2rem 0;
   padding: 1rem;
