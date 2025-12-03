@@ -9,10 +9,15 @@ app.secret_key = '12345678910'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))          # app.py がある場所
 PHOTOS_DIR = os.path.join(BASE_DIR, 'static', 'photos')        # /home/user/mysite/static/photos
+DATABASE_PATH = os.path.join(BASE_DIR, 'ui.db')               # データベースの絶対パス
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
+def get_db_connection():
+    """データベース接続を取得する関数"""
+    return sqlite3.connect(DATABASE_PATH)
+
 def matchuser(un,ps):
-    con = sqlite3.connect('ui.db')
+    con = get_db_connection()
     cur = con.cursor()
     cur.execute('select * from user where username=? and password=?',[un,ps])
     result = cur.fetchone()
@@ -20,7 +25,7 @@ def matchuser(un,ps):
 
 # データベース初期化
 def init_db():
-    conn = sqlite3.connect('ui.db')
+    conn = get_db_connection()
     c = conn.cursor()
     
     # ユーザーテーブル
@@ -562,13 +567,17 @@ def tips():
         if 'set_username' in request.form:
             display_name = request.form.get('display_name', '').strip()
             if display_name:
-                conn = sqlite3.connect('ui.db')
-                c = conn.cursor()
-                c.execute('UPDATE users SET display_name = ? WHERE id = ?', 
-                         (display_name, session['user_id']))
-                conn.commit()
-                conn.close()
-                flash('ユーザー名を設定しました')
+                try:
+                    conn = get_db_connection()
+                    c = conn.cursor()
+                    c.execute('UPDATE users SET display_name = ? WHERE id = ?', 
+                             (display_name, session['user_id']))
+                    conn.commit()
+                    conn.close()
+                    flash('ユーザー名を設定しました')
+                except Exception as e:
+                    app.logger.error(f"Error setting username: {e}")
+                    flash('ユーザー名の設定に失敗しました')
             return redirect(url_for('tips'))
         
         # TIPS投稿の処理
@@ -576,7 +585,7 @@ def tips():
         content = request.form.get('content', '').strip()
         if title and content:
             # ユーザーの表示名を取得
-            conn = sqlite3.connect('ui.db')
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
             user_data = c.fetchone()
@@ -593,7 +602,7 @@ def tips():
         return redirect(url_for('tips'))
 
     # GET: 投稿一覧を取得して表示
-    conn = sqlite3.connect('ui.db')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, title, content, username, created_at FROM tips_posts ORDER BY id DESC')
     posts = [{'id': row[0], 'title': row[1], 'content': row[2], 'username': row[3] or '匿名ユーザー', 'created_at': row[4]} for row in c.fetchall()]
@@ -601,11 +610,17 @@ def tips():
     # 現在のユーザーの表示名を取得
     current_user_display_name = None
     if 'user_id' in session:
-        c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
-        user_result = c.fetchone()
-        if user_result and user_result[0]:
-            display_name = user_result[0].strip()
-            current_user_display_name = display_name if display_name else None
+        try:
+            c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
+            user_result = c.fetchone()
+            if user_result and user_result[0]:
+                display_name = user_result[0].strip()
+                current_user_display_name = display_name if display_name else None
+        except Exception as e:
+            # PythonAnywhereでのデバッグ用 - ログファイルに出力
+            app.logger.error(f"Error getting display name: {e}")
+            app.logger.error(f"Session user_id: {session.get('user_id')}")
+            current_user_display_name = None
     
     conn.close()
     return render_template('tips.html', posts=posts, year=datetime.now().year, 
