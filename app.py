@@ -9,7 +9,7 @@ app.secret_key = '12345678910'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))          # app.py がある場所
 PHOTOS_DIR = os.path.join(BASE_DIR, 'static', 'photos')        # /home/user/mysite/static/photos
-DATABASE_PATH = os.path.join(BASE_DIR, 'ui.db')               # データベースの絶対パス
+DATABASE_PATH = os.path.join(os.path.dirname(BASE_DIR), 'ui.db')  # mysiteの外にデータベースを配置
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
 def get_db_connection():
