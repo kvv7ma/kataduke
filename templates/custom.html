@@ -186,7 +186,7 @@
     <div class="container">
         <!-- 新規タスク追加フォーム -->
         <div class="add-template-section">
-            <h3>✨ マイタスクを追加</h3>
+            <h3>✨ マイテンプレートを追加</h3>
             <div class="form-group">
                 <label>タスク内容</label>
                 <input type="text" id="newTaskInput" placeholder="追加したいタスクを入力してください">
@@ -196,14 +196,14 @@
 
         <hr style="margin: 2rem 0; border: none; border-top: 2px solid #ddd;">
 
-        <!-- 既存のマイタスク表示 -->
+        <!-- 既存のマイテンプレート表示 -->
         <p><strong>チェックしたタスクを一括で TODO に追加できます。</strong></p>
         
         <form id="templateForm">
             <div id="customTemplates">
                 {% if templates and templates|length > 0 %}
                     <section>
-                        <h2>📋 マイタスクリスト</h2>
+                        <h2>📋 マイテンプレート</h2>
                         {% for template in templates %}
                             {% for task in template.tasks %}
                             <label>
@@ -215,15 +215,15 @@
                     </section>
                 {% else %}
                     <div class="empty-message">
-                        まだマイタスクがありません。<br>
+                        まだマイテンプレートがありません。<br>
                         上のフォームから新しいタスクを追加してください。
                     </div>
                 {% endif %}
             </div>
 
-            <div style="margin-top:1rem;">
-                <button type="button" onclick="addSelected()" class="button">選択したタスクを TODO に追加</button>
-                <a href="/todo" class="button" style="background:#ccc; color:#000; margin-left:8px;">キャンセル</a>
+            <div style="margin-top:1rem; display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" onclick="addSelected()" class="button" style="flex:1; min-width:200px;">選択したタスクを TODO に追加</button>
+                <a href="/todo" class="button" style="background:#ccc; color:#000; flex:1; min-width:120px; box-sizing:border-box;">キャンセル</a>
             </div>
         </form>
     </div>

@@ -125,8 +125,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.85rem;
             line-height: 1.2;
         }
 
@@ -134,13 +134,18 @@
         @media (max-width: 480px) {
             .template-buttons {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
             }
             
             .template-buttons .button {
                 width: 100%;
-                padding: 0.7rem 1rem;
-                font-size: 0.85rem;
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+                box-sizing: border-box;
+            }
+            
+            .todo-container {
+                padding: 1rem;
             }
         }
         
@@ -150,6 +155,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1.2;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -196,8 +202,6 @@
         <div style="margin:1rem 0;">
             <a href="/delete" class="button" style="background:#e74c3c;">タスクを削除</a>
         </div>
-
-        <a href="{{ url_for('main') }}" class="back-button">戻る</a>
     </div>
 
     <script>
