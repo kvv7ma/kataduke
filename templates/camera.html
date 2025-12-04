@@ -3,9 +3,11 @@
 <head>
     <title>カメラ - 片付けアプリ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='tips.css') }}">
+
     <style>
         .camera-container {
             max-width: 800px;
@@ -19,10 +21,18 @@
             max-width: 640px;
             margin-bottom: 1rem;
             border-radius: 10px;
+            background: #000;
         }
 
         #canvas {
             display: none;
+        }
+
+        #photo {
+            max-width: 100%;
+            border-radius: 10px;
+            display: none;
+            margin-top: 1rem;
         }
 
         .camera-buttons {
@@ -57,23 +67,13 @@
             }
         }
 
-        .camera-button:hover {
-            background-color: #45a049;
+        .camera-button:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
 
         .retake-button {
             background-color: #ff6b6b;
-        }
-
-        .retake-button:hover {
-            background-color: #ff5252;
-        }
-
-        #photo {
-            max-width: 100%;
-            border-radius: 10px;
-            display: none;
-            margin-top: 1rem;
         }
 
         .back-button {
@@ -87,21 +87,27 @@
         }
     </style>
 </head>
+
 <body>
     <header>
-      <h1>KATATUKE CAMERA</h1>
+        <h1>KATATUKE CAMERA</h1>
         <nav>
             <a href="/main">ホーム</a> |
             <a href="/todo">TODO</a> |
             <a href="/album">アルバム</a> |
             <a href="/tips">TIPS</a>
+        </nav>
     </header>
+
     <div class="camera-container">
         <h1>写真を撮る</h1>
-        <video id="video" autoplay></video>
+
+        <!-- ★ iPhoneで強制フルスクリーン化されない完全版 -->
+        <video id="video" autoplay playsinline webkit-playsinline muted></video>
+
         <canvas id="canvas"></canvas>
         <img id="photo" alt="撮影した写真">
-        
+
         <div class="camera-buttons">
             <button id="startButton" class="camera-button">カメラを開始</button>
             <button id="snapButton" class="camera-button" disabled>撮影</button>
@@ -112,93 +118,86 @@
         <a href="{{ url_for('main') }}" class="back-button">戻る</a>
     </div>
 
-
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const photo = document.getElementById('photo');
+
         const startButton = document.getElementById('startButton');
         const snapButton = document.getElementById('snapButton');
         const retakeButton = document.getElementById('retakeButton');
         const saveButton = document.getElementById('saveButton');
-        const context = canvas.getContext('2d');
+
         let stream = null;
         let photoSaved = false;
 
-        // URLパラメータからtypeを取得
         const urlParams = new URLSearchParams(window.location.search);
         const photoType = urlParams.get('type') || 'before';
 
         // カメラ開始
         startButton.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' }
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } }
                 });
+
                 video.srcObject = stream;
+
                 startButton.disabled = true;
                 snapButton.disabled = false;
+
             } catch (err) {
-                console.error('カメラの起動に失敗しました:', err);
-                alert('カメラの起動に失敗しました。カメラへのアクセスを許可してください。');
+                console.error('カメラの起動に失敗:', err);
+                alert('カメラを使用できません。設定からアクセスを許可してください。');
             }
         });
 
-        // 写真撮影
+        // 撮影
         snapButton.addEventListener('click', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const data = canvas.toDataURL('image/png');
-            photo.setAttribute('src', data);
-            photo.style.display = 'block';
-            video.style.display = 'none';
-            
+
+            // iPhoneは videoWidth / videoHeight が遅延するため安全対応
+            const w = video.videoWidth || 640;
+            const h = video.videoHeight || 480;
+
+            canvas.width = w;
+            canvas.height = h;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, w, h);
+
+            photo.src = canvas.toDataURL("image/png");
+            photo.style.display = "block";
+            video.style.display = "none";
+
+            // カメラ停止
             if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+                stream.getTracks().forEach(t => t.stop());
             }
-            
+
             snapButton.disabled = true;
             retakeButton.disabled = false;
-            retakeButton.style.display = 'inline-block';
+            retakeButton.style.display = "inline-block";
             saveButton.disabled = false;
         });
 
         // 撮り直し
         retakeButton.addEventListener('click', async () => {
-            // 撮影した写真を非表示
-            photo.style.display = 'none';
-            video.style.display = 'block';
-            
-            // ボタンの状態をリセット
+            photo.style.display = "none";
+            video.style.display = "block";
+
+            retakeButton.disabled = true;
+            retakeButton.style.display = "none";
+            saveButton.disabled = true;
+
             startButton.disabled = false;
             snapButton.disabled = true;
-            retakeButton.disabled = true;
-            retakeButton.style.display = 'none';
-            saveButton.disabled = true;
-            
-            // カメラを再起動
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' }
-                });
-                video.srcObject = stream;
-                startButton.disabled = true;
-                snapButton.disabled = false;
-            } catch (err) {
-                console.error('カメラの再起動に失敗しました:', err);
-                alert('カメラの再起動に失敗しました。');
-            }
         });
 
         // 写真保存
         saveButton.addEventListener('click', async () => {
             const response = await fetch(`/save_photo?type=${photoType}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     image: photo.src,
                     date: new Date().toISOString()
@@ -207,37 +206,18 @@
 
             if (response.ok) {
                 photoSaved = true;
-                alert('写真を保存しました！');
+                alert("保存しました！");
                 window.location.href = "{{ url_for('album') }}";
             } else {
-                alert('写真の保存に失敗しました。');
+                alert("保存に失敗しました。");
             }
         });
 
-        // カメラページから離脱するときに復元処理（写真保存成功時以外）
-        window.addEventListener('beforeunload', async (e) => {
+        // ページ離脱時の復元処理
+        window.addEventListener("beforeunload", () => {
             if (!photoSaved && photoType === 'after') {
-                navigator.sendBeacon('/restore_marked_todos', JSON.stringify({}));
+                navigator.sendBeacon("/restore_marked_todos", JSON.stringify({}));
             }
-        });
-
-        // 戻るボタンやナビリンクをクリックしたときも復元
-        document.querySelectorAll('.back-button, nav a').forEach(link => {
-            link.addEventListener('click', async (e) => {
-                if (!photoSaved && photoType === 'after') {
-                    e.preventDefault();
-                    const href = e.target.href;
-                    try {
-                        await fetch('/restore_marked_todos', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({})
-                        });
-                    } finally {
-                        window.location.href = href;
-                    }
-                }
-            });
         });
     </script>
 </body>

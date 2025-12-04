@@ -84,7 +84,9 @@
               <li>
                 <div class="post-header">
                   <h3>{{ post.title }}</h3>
+                  {% if current_user_id and post.user_id == current_user_id %}
                   <button class="delete-btn" onclick="deleteTip('{{ post.id }}')">削除</button>
+                  {% endif %}
                 </div>
                 <div class="post-meta">
                   <span class="post-author">投稿者: {{ post.username }}</span>

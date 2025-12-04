@@ -621,8 +621,8 @@ def tips():
     # GET: 投稿一覧を取得して表示
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, title, content, username, created_at FROM tips_posts ORDER BY id DESC')
-    posts = [{'id': row[0], 'title': row[1], 'content': row[2], 'username': row[3] or '匿名ユーザー', 'created_at': row[4]} for row in c.fetchall()]
+    c.execute('SELECT id, title, content, username, created_at, user_id FROM tips_posts ORDER BY id DESC')
+    posts = [{'id': row[0], 'title': row[1], 'content': row[2], 'username': row[3] or '匿名ユーザー', 'created_at': row[4], 'user_id': row[5]} for row in c.fetchall()]
     
     # 現在のユーザーの表示名を取得
     current_user_display_name = None
@@ -641,12 +641,13 @@ def tips():
     
     conn.close()
     return render_template('tips.html', posts=posts, year=datetime.now().year, 
-                         current_user_display_name=current_user_display_name)
+                         current_user_display_name=current_user_display_name,
+                         current_user_id=session.get('user_id'))
 
 @app.route('/delete_tip', methods=['POST'])
 def delete_tip():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Not logged in'})
+        return jsonify({'success': False, 'error': 'ログインしていません'}), 401
     
     try:
         data = request.get_json()
@@ -655,8 +656,22 @@ def delete_tip():
         if tip_id is None:
             return jsonify({'success': False, 'error': 'IDが指定されていません'}), 400
         
-        conn = sqlite3.connect('ui.db')
+        conn = get_db_connection()
         c = conn.cursor()
+        
+        # 投稿が存在し、かつ投稿者が現在のユーザーであることを確認
+        c.execute('SELECT user_id FROM tips_posts WHERE id = ?', (tip_id,))
+        result = c.fetchone()
+        
+        if result is None:
+            conn.close()
+            return jsonify({'success': False, 'error': '投稿が見つかりません'}), 404
+        
+        # 投稿者本人のみ削除可能
+        if result[0] != session['user_id']:
+            conn.close()
+            return jsonify({'success': False, 'error': '削除権限がありません'}), 403
+        
         c.execute('DELETE FROM tips_posts WHERE id = ?', (tip_id,))
         conn.commit()
         conn.close()
