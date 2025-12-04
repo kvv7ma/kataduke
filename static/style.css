@@ -209,6 +209,26 @@ nav a:hover {
     overflow: hidden;
 }
 
+/* タイトル */
+.title-container {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 100%;
+    text-align: center;
+}
+
+.app-title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    font-family: 'Arial Black', Arial, sans-serif;
+    letter-spacing: 0.2rem;
+}
+
 /* 背景レイヤー */
 .background-layer {
     position: absolute;
@@ -645,6 +665,11 @@ img, video, canvas {
         max-width: 100%;
     }
 
+    .app-title {
+        font-size: 2rem;
+        letter-spacing: 0.1rem;
+    }
+
     #character img { max-width: 100%; width: 40%; height: auto; }
 
     #speech-bubble { 
@@ -758,6 +783,11 @@ img, video, canvas {
         font-size: 1.3rem;
         margin: 0.3rem 0;
     }
+    
+    .app-title {
+        font-size: 1.8rem;
+        letter-spacing: 0.1rem;
+    }
 }
 
 /* 極小スクリーン用 (320px以下) */
@@ -770,5 +800,10 @@ img, video, canvas {
     
     header h1 {
         font-size: 1.1rem;
+    }
+    
+    .app-title {
+        font-size: 1.5rem;
+        letter-spacing: 0.05rem;
     }
 }

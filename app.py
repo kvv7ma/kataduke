@@ -9,7 +9,7 @@ app.secret_key = '12345678910'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))          # app.py がある場所
 PHOTOS_DIR = os.path.join(BASE_DIR, 'static', 'photos')        # /home/user/mysite/static/photos
-DATABASE_PATH = os.path.join(BASE_DIR, 'ui.db')               # データベースの絶対パス
+DATABASE_PATH = os.path.join(os.path.dirname(BASE_DIR), 'ui.db')  # mysiteの外にデータベースを配置
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
 def get_db_connection():
@@ -580,39 +580,18 @@ def tips():
         if 'user_id' not in session:
             return redirect(url_for('login'))
         
-        # ユーザー名設定の処理
-        if 'set_username' in request.form:
-            display_name = request.form.get('display_name', '').strip()
-            if display_name:
-                try:
-                    conn = get_db_connection()
-                    c = conn.cursor()
-                    c.execute('UPDATE users SET display_name = ? WHERE id = ?', 
-                             (display_name, session['user_id']))
-                    conn.commit()
-                    conn.close()
-                    flash('ユーザー名を設定しました')
-                except Exception as e:
-                    app.logger.error(f"Error setting username: {e}")
-                    flash('ユーザー名の設定に失敗しました')
-            return redirect(url_for('tips'))
-        
         # TIPS投稿の処理
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
         if title and content:
-            # ユーザーの表示名を取得
             conn = get_db_connection()
             c = conn.cursor()
-            c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
-            user_data = c.fetchone()
-            display_name = user_data[0] if user_data and user_data[0] else '匿名ユーザー'
             
             jst = timezone(timedelta(hours=9))
             created_at = datetime.now(jst).strftime('%Y-%m-%d %H:%M:%S')
             
-            c.execute('INSERT INTO tips_posts (title, content, user_id, username, created_at) VALUES (?, ?, ?, ?, ?)',
-                      (title, content, session['user_id'], display_name, created_at))
+            c.execute('INSERT INTO tips_posts (title, content, user_id, created_at) VALUES (?, ?, ?, ?)',
+                      (title, content, session['user_id'], created_at))
             conn.commit()
             conn.close()
             flash('投稿しました')
@@ -621,32 +600,17 @@ def tips():
     # GET: 投稿一覧を取得して表示
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, title, content, username, created_at FROM tips_posts ORDER BY id DESC')
-    posts = [{'id': row[0], 'title': row[1], 'content': row[2], 'username': row[3] or '匿名ユーザー', 'created_at': row[4]} for row in c.fetchall()]
-    
-    # 現在のユーザーの表示名を取得
-    current_user_display_name = None
-    if 'user_id' in session:
-        try:
-            c.execute('SELECT display_name FROM users WHERE id = ?', (session['user_id'],))
-            user_result = c.fetchone()
-            if user_result and user_result[0]:
-                display_name = user_result[0].strip()
-                current_user_display_name = display_name if display_name else None
-        except Exception as e:
-            # PythonAnywhereでのデバッグ用 - ログファイルに出力
-            app.logger.error(f"Error getting display name: {e}")
-            app.logger.error(f"Session user_id: {session.get('user_id')}")
-            current_user_display_name = None
-    
+    c.execute('SELECT id, title, content, created_at, user_id FROM tips_posts ORDER BY id DESC')
+    posts = [{'id': row[0], 'title': row[1], 'content': row[2], 'created_at': row[3], 'user_id': row[4]} for row in c.fetchall()]
     conn.close()
+    
     return render_template('tips.html', posts=posts, year=datetime.now().year, 
-                         current_user_display_name=current_user_display_name)
+                         current_user_id=session.get('user_id'))
 
 @app.route('/delete_tip', methods=['POST'])
 def delete_tip():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Not logged in'})
+        return jsonify({'success': False, 'error': 'ログインしていません'}), 401
     
     try:
         data = request.get_json()
@@ -655,8 +619,22 @@ def delete_tip():
         if tip_id is None:
             return jsonify({'success': False, 'error': 'IDが指定されていません'}), 400
         
-        conn = sqlite3.connect('ui.db')
+        conn = get_db_connection()
         c = conn.cursor()
+        
+        # 投稿が存在し、かつ投稿者が現在のユーザーであることを確認
+        c.execute('SELECT user_id FROM tips_posts WHERE id = ?', (tip_id,))
+        result = c.fetchone()
+        
+        if result is None:
+            conn.close()
+            return jsonify({'success': False, 'error': '投稿が見つかりません'}), 404
+        
+        # 投稿者本人のみ削除可能
+        if result[0] != session['user_id']:
+            conn.close()
+            return jsonify({'success': False, 'error': '削除権限がありません'}), 403
+        
         c.execute('DELETE FROM tips_posts WHERE id = ?', (tip_id,))
         conn.commit()
         conn.close()

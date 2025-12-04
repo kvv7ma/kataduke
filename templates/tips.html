@@ -27,44 +27,8 @@
         {% endif %}
       {% endwith %}
 
-      <!-- デバッグ情報（PythonAnywhere用） -->
-      <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-size: 12px; color: #666;">
-        <strong>デバッグ情報:</strong>
-        current_user_display_name = "{{ current_user_display_name }}"
-        (type: {{ current_user_display_name.__class__.__name__ if current_user_display_name else 'None' }})
-      </div>
-
-      {% if not current_user_display_name %}
-      <section class="username-section">
-        <h2>ユーザー名設定</h2>
-        <p>初回投稿前にユーザー名を設定してください。</p>
-        <form action="/tips" method="post">
-          <div>
-            <label for="display_name">表示名</label><br>
-            <input id="display_name" name="display_name" type="text" maxlength="20" style="width:300px;" placeholder="例: 片付け太郎" required>
-            <button type="submit" name="set_username">設定</button>
-          </div>
-        </form>
-      </section>
-      {% endif %}
-
       <section>
         <h2>投稿する</h2>
-        {% if current_user_display_name %}
-        <div class="user-info">
-          <p class="current-user">投稿者名: <strong>{{ current_user_display_name }}</strong></p>
-          <details>
-            <summary>ユーザー名を変更する</summary>
-            <form action="/tips" method="post" style="margin-top: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="new_display_name">新しい表示名:</label>
-                <input id="new_display_name" name="display_name" type="text" maxlength="20" 
-                       value="{{ current_user_display_name }}" style="width:200px;" required>
-                <button type="submit" name="set_username">変更</button>
-              </div>
-            </form>
-          </details>
-        </div>
         <form action="/tips" method="post">
           <div>
             <label for="title">タイトル</label><br>
@@ -78,9 +42,6 @@
             <button type="submit">投稿</button>
           </div>
         </form>
-        {% else %}
-        <p class="notice">投稿するには上記でユーザー名を設定してください。</p>
-        {% endif %}
       </section>
 
       <section>
@@ -91,10 +52,11 @@
               <li>
                 <div class="post-header">
                   <h3>{{ post.title }}</h3>
+                  {% if current_user_id and post.user_id == current_user_id %}
                   <button class="delete-btn" onclick="deleteTip('{{ post.id }}')">削除</button>
+                  {% endif %}
                 </div>
                 <div class="post-meta">
-                  <span class="post-author">投稿者: {{ post.username }}</span>
                   <span class="post-date">投稿日: {{ post.created_at }}</span>
                 </div>
                 <p>{{ post.content }}</p>
@@ -113,7 +75,6 @@
 
   <script>
     function deleteTip(tipId) {
-      console.log('削除対象ID:', tipId); // デバッグ用
       if (confirm('この投稿を削除しますか？')) {
         fetch('/delete_tip', {
           method: 'POST',
