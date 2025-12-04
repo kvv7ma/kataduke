@@ -27,37 +27,8 @@
         {% endif %}
       {% endwith %}
 
-      {% if not current_user_display_name %}
-      <section class="username-section">
-        <h2>ユーザー名設定</h2>
-        <p>初回投稿前にユーザー名を設定してください。</p>
-        <form action="/tips" method="post">
-          <div>
-            <label for="display_name">表示名</label><br>
-            <input id="display_name" name="display_name" type="text" maxlength="20" style="width:300px;" placeholder="例: 片付け太郎" required>
-            <button type="submit" name="set_username">設定</button>
-          </div>
-        </form>
-      </section>
-      {% endif %}
-
       <section>
         <h2>投稿する</h2>
-        {% if current_user_display_name %}
-        <div class="user-info">
-          <p class="current-user">投稿者名: <strong>{{ current_user_display_name }}</strong></p>
-          <details>
-            <summary>ユーザー名を変更する</summary>
-            <form action="/tips" method="post" style="margin-top: 10px;">
-              <div class="username-change-form">
-                <label for="new_display_name">新しい表示名:</label>
-                <input id="new_display_name" name="display_name" type="text" maxlength="20" 
-                       value="{{ current_user_display_name }}" required>
-                <button type="submit" name="set_username">変更</button>
-              </div>
-            </form>
-          </details>
-        </div>
         <form action="/tips" method="post">
           <div>
             <label for="title">タイトル</label><br>
@@ -71,9 +42,6 @@
             <button type="submit">投稿</button>
           </div>
         </form>
-        {% else %}
-        <p class="notice">投稿するには上記でユーザー名を設定してください。</p>
-        {% endif %}
       </section>
 
       <section>
@@ -89,7 +57,6 @@
                   {% endif %}
                 </div>
                 <div class="post-meta">
-                  <span class="post-author">投稿者: {{ post.username }}</span>
                   <span class="post-date">投稿日: {{ post.created_at }}</span>
                 </div>
                 <p>{{ post.content }}</p>
