@@ -49,10 +49,10 @@
           <details>
             <summary>ユーザー名を変更する</summary>
             <form action="/tips" method="post" style="margin-top: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="username-change-form">
                 <label for="new_display_name">新しい表示名:</label>
                 <input id="new_display_name" name="display_name" type="text" maxlength="20" 
-                       value="{{ current_user_display_name }}" style="width:200px;" required>
+                       value="{{ current_user_display_name }}" required>
                 <button type="submit" name="set_username">変更</button>
               </div>
             </form>

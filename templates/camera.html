@@ -27,17 +27,34 @@
 
         .camera-buttons {
             margin: 1rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
         }
 
         .camera-button {
             padding: 0.8rem 2rem;
-            margin: 0 0.5rem;
             border: none;
             border-radius: 25px;
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        @media (max-width: 600px) {
+            .camera-buttons {
+                gap: 1.5rem;
+                margin: 2rem 0;
+            }
+            
+            .camera-button {
+                padding: 1rem 1.5rem;
+                min-width: 140px;
+                font-size: 1rem;
+            }
         }
 
         .camera-button:hover {
